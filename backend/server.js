@@ -191,7 +191,7 @@ const createDefaultAdmin = async () => {
         password: hashedPassword
       });
 
-      console.log("🔥 Default admin created:");
+      console.log("Default admin created:");
       console.log("Email: admin@gmail.com");
       console.log("Password: admin123");
     } else {
