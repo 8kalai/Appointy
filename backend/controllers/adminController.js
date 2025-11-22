@@ -7,24 +7,43 @@ import { v2 as cloudinary } from "cloudinary";
 import userModel from "../models/userModel.js"
 
 // API for admin login
+import Admin from "../models/adminModel.js";
+
+// Admin login controller
 const loginAdmin = async (req, res) => {
-    try {
+  try {
+    const { email, password } = req.body;
 
-        const { email, password } = req.body
+    // Clean inputs
+    const cleanEmail = email.trim().toLowerCase();
+    const cleanPassword = password.trim();
 
-        if (email === process.env.ADMIN_EMAIL && password === process.env.ADMIN_PASSWORD) {
-            const token = jwt.sign(email + password, process.env.JWT_SECRET)
-            res.json({ success: true, token })
-        } else {
-            res.json({ success: false, message: "Invalid credentials" })
-        }
-
-    } catch (error) {
-        console.log(error)
-        res.json({ success: false, message: error.message })
+    // Find admin by email
+    const admin = await Admin.findOne({ email: cleanEmail });
+    if (!admin) {
+      return res.status(401).json({ message: "Invalid credentials" });
     }
 
-}
+    // Compare password
+    const isMatch = await bcrypt.compare(cleanPassword, admin.password);
+    if (!isMatch) {
+      return res.status(401).json({ message: "Invalid credentials" });
+    }
+
+    // If you use sessions:
+    req.session.admin = { id: admin._id, email: admin.email };
+    // OR if you prefer JWT:
+    // const token = jwt.sign({ id: admin._id }, process.env.JWT_SECRET, { expiresIn: '1h' });
+
+    // Redirect to admin dashboard
+    return res.status(200).json({ message: "Login successful", admin }); 
+    // OR if using frontend redirect: res.redirect("/admin/dashboard");
+
+  } catch (error) {
+    console.error("Admin login error:", error);
+    res.status(500).json({ message: "Server error" });
+  }
+};
 
 // API for adding Doctor
 const addDoctor = async (req, res) => {
