@@ -91,8 +91,8 @@ import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
 // 🟢 FIX BUILD PATHS HERE - Check case-sensitivity and folder structure
-import Navbar from './components/Navbar/Navbar'; 
-import Sidebar from './components/Sidebar/Sidebar'; 
+import Navbar from './components/Navbar.jsx'; 
+import Sidebar from './components/Sidebar.jsx'; 
 
 // Admin Pages
 import Dashboard from './pages/Admin/Dashboard';
