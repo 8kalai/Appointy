@@ -84,8 +84,8 @@ export default <App*/
 // src/App.jsx
 
 import React, { useContext } from 'react';
-import { DoctorContext } from './context/DoctorContext';
-import { AdminContext } from './context/AdminContext';
+import { DoctorContext } from './context/DoctorContext.jsx';
+import { AdminContext } from './context/AdminContext.jsx';
 import { Route, Routes, Navigate, useLocation } from 'react-router-dom';
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
@@ -95,18 +95,18 @@ import Navbar from './components/Navbar.jsx';
 import Sidebar from './components/Sidebar.jsx'; 
 
 // Admin Pages
-import Dashboard from './pages/Admin/Dashboard';
-import AllAppointments from './pages/Admin/AllAppointments';
-import AddDoctor from './pages/Admin/AddDoctor';
-import DoctorsList from './pages/Admin/DoctorsList';
+import Dashboard from './pages/Admin/Dashboard.jsx';
+import AllAppointments from './pages/Admin/AllAppointments.jsx';
+import AddDoctor from './pages/Admin/AddDoctor.jsx';
+import DoctorsList from './pages/Admin/DoctorsList.jsx';
 
 // Doctor Pages
-import DoctorAppointments from './pages/Doctor/DoctorAppointments';
-import DoctorDashboard from './pages/Doctor/DoctorDashboard';
-import DoctorProfile from './pages/Doctor/DoctorProfile';
+import DoctorAppointments from './pages/Doctor/DoctorAppointments.jsx';
+import DoctorDashboard from './pages/Doctor/DoctorDashboard.jsx';
+import DoctorProfile from './pages/Doctor/DoctorProfile.jsx';
 
 // Login Page
-import Login from './pages/Login/Login'; // Using the fixed Login component
+import Login from './pages/Login.jsx'; // Using the fixed Login component
 
 const App = () => {
   // Read tokens from Context
