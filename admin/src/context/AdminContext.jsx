@@ -1,4 +1,4 @@
-import axios from "axios";
+/*import axios from "axios";
 import { createContext, useState } from "react";
 import { toast } from "react-toastify";
 
@@ -123,4 +123,83 @@ const AdminContextProvider = (props) => {
     )
 
 }
-export default AdminContextProvider
+export default AdminContextProvider;*/
+
+import axios from "axios";
+import { createContext, useState, useEffect } from "react";
+import { toast } from "react-toastify";
+
+export const AdminContext = createContext();
+
+const AdminContextProvider = (props) => {
+    const [aToken, setAToken] = useState(localStorage.getItem('aToken') || '');
+    const [doctors, setDoctors] = useState([]);
+    const [appointments, setAppointments] = useState([]);
+    const [dashData, setDashData] = useState(false);
+    const backendUrl = import.meta.env.VITE_BACKEND_URL;
+    console.log("Loaded Backend URL from .env →", backendUrl);
+
+
+    useEffect(() => {
+        const storedToken = localStorage.getItem('aToken');
+        if (storedToken) setAToken(storedToken);
+    }, []);
+
+    // Fetch doctors when token is available
+    useEffect(() => {
+        if (aToken) getAllDoctors();
+    }, [aToken]);
+
+    const getConfig = () => ({
+        headers: {
+            Authorization: `Bearer ${aToken}`
+        }
+    });
+
+    // Fetch all doctors
+    const getAllDoctors = async () => {
+        try {
+            const { data } = await axios.get(`${backendUrl}/api/doctor/list`); // No auth needed
+            console.log("Fetched doctors:", data);
+            if (data.success) {
+                setDoctors(data.doctors);
+            } else {
+                toast.error(data.message);
+            }
+        } catch (error) {
+            console.error("Error fetching doctors:", error);
+            toast.error(error.message);
+        }
+    };
+
+    // Toggle doctor availability (admin only, backend route might need authAdmin)
+    const changeAvailability = async (docId) => {
+        try {
+            const { data } = await axios.post(`${backendUrl}/api/doctor/change-availability`, { docId }, getConfig());
+            if (data.success) {
+                toast.success(data.message);
+                getAllDoctors(); // Refresh list
+            } else {
+                toast.error(data.message);
+            }
+        } catch (error) {
+            toast.error(error.message);
+            console.error("Error changing availability:", error);
+        }
+    };
+
+    const value = {
+        aToken, setAToken,
+        doctors, getAllDoctors, changeAvailability,
+        appointments, setAppointments,
+        dashData, setDashData
+    };
+
+    return (
+        <AdminContext.Provider value={value}>
+            {props.children}
+        </AdminContext.Provider>
+    );
+};
+
+export default AdminContextProvider;

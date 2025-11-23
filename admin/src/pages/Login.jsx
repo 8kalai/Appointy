@@ -1,4 +1,4 @@
-import axios from 'axios'
+/*import axios from 'axios'
 import React, { useContext, useState } from 'react'
 import { DoctorContext } from '../context/DoctorContext'
 import { AdminContext } from '../context/AdminContext'
@@ -66,4 +66,92 @@ const Login = () => {
   )
 }
 
-export default Login
+export default Login*/
+
+import axios from 'axios';
+import React, { useContext, useState } from 'react';
+import { DoctorContext } from '../context/DoctorContext';
+import { AdminContext } from '../context/AdminContext';
+import { toast } from 'react-toastify';
+import { useNavigate } from 'react-router-dom'; // ❗ ADDED: Import useNavigate
+
+const Login = () => {
+    const [state, setState] = useState('Admin');
+    const [email, setEmail] = useState('');
+    const [password, setPassword] = useState('');
+
+    const backendUrl = import.meta.env.VITE_BACKEND_URL || 'http://localhost:4000';
+    const { setDToken } = useContext(DoctorContext);
+    const { setAToken } = useContext(AdminContext);
+
+    const navigate = useNavigate(); // ❗ ADDED: Initialize the navigate hook
+
+    const onSubmitHandler = async (event) => {
+        event.preventDefault();
+        try {
+            const route = state === 'Admin' ? '/api/admin/login' : '/api/doctor/login';
+
+            /*const { data } = await axios.post(`${backendUrl}${route}`, {
+                email: email.trim().toLowerCase(),
+                password
+            });*/
+            console.log("Submitting to URL:", `${backendUrl}${route}`);
+            console.log("Submitting Data:", { 
+              email: email.trim().toLowerCase(), 
+              password 
+            });
+
+            console.log("Login Response:", data); // Debug
+
+            if (data.success) {
+                const token = data.token;
+                if (state === 'Admin') {
+                    setAToken(token);
+                    localStorage.setItem('aToken', token);
+                    
+                    // 🔥 FIX: Redirect immediately after saving the token
+                    navigate('/admin'); 
+                } else {
+                    setDToken(token);
+                    localStorage.setItem('dToken', token);
+                    navigate('/doctor');
+                }
+                toast.success(data.message);
+            } else {
+                // Shows error on genuine failure
+                toast.error(data.message);
+            }
+        } catch (err) {
+            // Log the specific error message from the backend if available
+            console.error(err.response?.data?.message || err.message); 
+            toast.error(err.response?.data?.message || "Login failed. Check console for details.");
+        }
+    };
+
+    return (
+        <form onSubmit={onSubmitHandler} className='min-h-[80vh] flex items-center'>
+            <div className='flex flex-col gap-3 m-auto items-start p-8 min-w-[340px] sm:min-w-96 border rounded-xl text-[#5E5E5E] text-sm shadow-lg'>
+                <p className='text-2xl font-semibold m-auto'>
+                    <span className='text-primary'>{state}</span> Login
+                </p>
+                <div className='w-full'>
+                    <p>Email</p>
+                    <input type="email" required value={email} onChange={e => setEmail(e.target.value)}
+                        className='border border-[#DADADA] rounded w-full p-2 mt-1' />
+                </div>
+                <div className='w-full'>
+                    <p>Password</p>
+                    <input type="password" required value={password} onChange={e => setPassword(e.target.value)}
+                        className='border border-[#DADADA] rounded w-full p-2 mt-1' />
+                </div>
+                <button className='bg-primary text-white w-full py-2 rounded-md text-base'>Login</button>
+                {state === 'Admin'
+                    ? <p>Doctor Login? <span onClick={() => setState('Doctor')} className='text-primary underline cursor-pointer'>Click here</span></p>
+                    : <p>Admin Login? <span onClick={() => setState('Admin')} className='text-primary underline cursor-pointer'>Click here</span></p>
+                }
+            </div>
+        </form>
+    );
+};
+
+export default Login;

@@ -11,40 +11,61 @@ import Admin from "../models/adminModel.js";
 
 // Admin login controller
 const loginAdmin = async (req, res) => {
-  try {
-    const { email, password } = req.body;
+    // Assuming required imports (Admin, bcrypt, jwt) are present
+    // import Admin from '../models/adminModel.js'; 
+    // import bcrypt from 'bcrypt';
+    // import jwt from 'jsonwebtoken';
 
-    // Clean inputs
-    const cleanEmail = email.trim().toLowerCase();
-    const cleanPassword = password.trim();
+    try {
+        let { email, password } = req.body;
 
-    // Find admin by email
-    const admin = await Admin.findOne({ email: cleanEmail });
-    if (!admin) {
-      return res.status(401).json({ message: "Invalid credentials" });
+        if (!email || !password) {
+            return res.status(400).json({ success: false, message: "Email and password are required" });
+        }
+
+        // Clean email and password
+        const cleanEmail = email.trim().toLowerCase();
+        const cleanPassword = password.trim();
+
+        // Case-insensitive email search
+        const admin = await Admin.findOne({ email: { $regex: `^${cleanEmail}$`, $options: 'i' } });
+
+        if (!admin) {
+            return res.status(401).json({ success: false, message: "Invalid credentials" });
+        }
+
+        // Compare password
+        const isMatch = await bcrypt.compare(cleanPassword, admin.password);
+        if (!isMatch) {
+            return res.status(401).json({ success: false, message: "Invalid credentials" });
+        }
+        console.log("Signing Secret:", process.env.JWT_SECRET);
+        // Generate JWT token
+        const token = jwt.sign(
+            { id: admin._id, email: admin.email },
+            process.env.JWT_SECRET,
+            { expiresIn: "1h" }
+        );
+
+        console.log("Admin login successful:", admin.email);
+
+        // Return success and token
+        return res.status(200).json({
+            success: true,
+            message: "Login successful",
+            token, // ⬅️ Token is correctly returned
+            admin: {
+                _id: admin._id,
+                name: admin.name,
+                email: admin.email
+            }
+        });
+
+    } catch (error) {
+        console.error("Admin login error:", error);
+        return res.status(500).json({ success: false, message: "Server error" });
     }
-
-    // Compare password
-    const isMatch = await bcrypt.compare(cleanPassword, admin.password);
-    if (!isMatch) {
-      return res.status(401).json({ message: "Invalid credentials" });
-    }
-
-    // If you use sessions:
-    req.session.admin = { id: admin._id, email: admin.email };
-    // OR if you prefer JWT:
-    // const token = jwt.sign({ id: admin._id }, process.env.JWT_SECRET, { expiresIn: '1h' });
-
-    // Redirect to admin dashboard
-    return res.status(200).json({ message: "Login successful", admin }); 
-    // OR if using frontend redirect: res.redirect("/admin/dashboard");
-
-  } catch (error) {
-    console.error("Admin login error:", error);
-    res.status(500).json({ message: "Server error" });
-  }
 };
-
 // API for adding Doctor
 const addDoctor = async (req, res) => {
   try {
