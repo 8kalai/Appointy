@@ -243,7 +243,7 @@ const Login = () => {
 export default Login*/
 
 // Login.jsx
-import axios from 'axios';
+/*import axios from 'axios';
 import React, { useContext, useState } from 'react';
 // 🟢 Import the new Context files
 import { DoctorContext } from '../context/doctorContext.jsx'; 
@@ -306,6 +306,128 @@ const Login = () => {
     };
 
     // ... rest of the return statement (form and inputs) ...
+};
+
+export default Login;*/
+
+import axios from 'axios';
+import React, { useState } from 'react';
+// 🛑 REMOVED: import { DoctorContext, AdminContext } 
+// We are removing these as they caused the component to crash on rendering.
+import { toast } from 'react-toastify';
+import { useNavigate } from 'react-router-dom';
+
+const Login = () => {
+    // 🟢 CRITICAL TEST: This must appear in the console if the component renders.
+    console.log("Login Component: Initialization started."); 
+
+    const [state, setState] = useState('Admin');
+    const [email, setEmail] = useState('');
+    const [password, setPassword] = useState('');
+
+    // 🛑 TEMPORARY FIX: HARDCODE DEPLOYED URL TO ELIMINATE ENV VARIABLE ERRORS
+    // ----------------------------------------------------------------------
+    // REPLACE THIS PLACEHOLDER with your actual live backend HTTPS URL (e.g., 'https://my-backend-api.onrender.com')
+    const backendUrl = 'https://appointy-zxmd.onrender.com'; 
+    // ----------------------------------------------------------------------
+    
+    // 🛑 REMOVED: useContext calls (they were causing the fatal crash)
+    // We will update localStorage directly instead.
+
+    const navigate = useNavigate();
+
+    const onSubmitHandler = async (event) => {
+        // 🟢 CRITICAL TEST: This must appear in the console if the submit event is handled.
+        console.log("1. Submitting Form. Event handler triggered."); 
+        
+        event.preventDefault();
+
+        const route = state === 'Admin' ? '/api/admin/login' : '/api/doctor/login';
+        
+        // Log the full, hardcoded URL being sent
+        const fullUrl = `${backendUrl}${route}`;
+        console.log("2. Attempting POST to URL:", fullUrl);
+
+        try {
+            // The Axios call to the constructed URL
+            const { data } = await axios.post(fullUrl, {
+                email: email.trim().toLowerCase(),
+                password
+            });
+            
+            if (data.success) {
+                const token = data.token;
+                if (state === 'Admin') {
+                    // We can't use setAToken, so we just save to localStorage and navigate.
+                    localStorage.setItem('aToken', token); 
+                    navigate('/admin-dashboard'); 
+                } else {
+                    // We can't use setDToken, so we just save to localStorage and navigate.
+                    localStorage.setItem('dToken', token); 
+                    navigate('/doctor-dashboard'); 
+                }
+                
+                // Show success toast
+                toast.success(data.message);
+                console.log("3. Login SUCCESSFUL. Token saved.");
+            } else {
+                // This runs if the backend sends success: false (invalid credentials)
+                console.log("3. Backend Response: Invalid Credentials.");
+                toast.error(data.message);
+            }
+        } catch (err) {
+            // This runs if the network request fails (CORS, 404, or wrong URL)
+            console.error("3. Network/Catch Error. Request failed completely.", err); 
+            console.error("Failed URL was:", fullUrl);
+            
+            // Display the generic error
+            toast.error(err.response?.data?.message || "Network Error: Check browser console for details.");
+        }
+    };
+
+    return (
+        <form onSubmit={onSubmitHandler} className='min-h-[80vh] flex items-center'>
+            <div className='flex flex-col gap-3 m-auto items-start p-8 min-w-[340px] sm:min-w-96 border rounded-xl text-[#5E5E5E] text-sm shadow-lg'>
+                <p className='text-2xl font-semibold m-auto'>
+                    <span className='text-primary'>{state}</span> Login
+                </p>
+                <div className='w-full'>
+                    <p>Email</p>
+                    <input 
+                        type="email" 
+                        required 
+                        value={email} 
+                        onChange={e => setEmail(e.target.value)}
+                        id="admin-email" 
+                        name="adminEmail"
+                        className='border border-[#DADADA] rounded w-full p-2 mt-1' 
+                    />
+                </div>
+                <div className='w-full'>
+                    <p>Password</p>
+                    <input 
+                        type="password" 
+                        required 
+                        value={password} 
+                        onChange={e => setPassword(e.target.value)}
+                        id="admin-password" 
+                        name="adminPassword"
+                        className='border border-[#DADADA] rounded w-full p-2 mt-1' 
+                    />
+                </div>
+                <button 
+                    type="submit" 
+                    className='bg-primary text-white w-full py-2 rounded-md text-base'
+                >
+                    Login
+                </button>
+                {state === 'Admin'
+                    ? <p>Doctor Login? <span onClick={() => setState('Doctor')} className='text-primary underline cursor-pointer'>Click here</span></p>
+                    : <p>Admin Login? <span onClick={() => setState('Admin')} className='text-primary underline cursor-pointer'>Click here</span></p>
+                }
+            </div>
+        </form>
+    );
 };
 
 export default Login;
