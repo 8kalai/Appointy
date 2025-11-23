@@ -83,7 +83,7 @@ const Login = () => {
 
 export default Login*/
 
-import React, { useContext, useEffect, useState } from 'react'
+/*import React, { useContext, useEffect, useState } from 'react'
 import { AppContext } from '../context/AppContext'
 import axios from 'axios'
 import { toast } from 'react-toastify'
@@ -206,7 +206,7 @@ const Login = () => {
           />
         </div>
 
-        {/* ⭐ Password Criteria Section - visible only in Sign Up */}
+        
         {state === "Sign Up" && (
           <div className="text-xs w-full mt-1">
             <p className={rules.length ? "text-green-600" : "text-red-500"}>
@@ -240,4 +240,72 @@ const Login = () => {
   )
 }
 
-export default Login
+export default Login*/
+
+// Login.jsx
+import axios from 'axios';
+import React, { useContext, useState } from 'react';
+// 🟢 Import the new Context files
+import { DoctorContext } from '../context/doctorContext.jsx'; 
+import { AdminContext } from '../context/adminContext.jsx'; 
+import { toast } from 'react-toastify';
+import { useNavigate } from 'react-router-dom';
+
+const Login = () => {
+    console.log("Login Component: Initialization started."); 
+
+    const [state, setState] = useState('Admin');
+    const [email, setEmail] = useState('');
+    const [password, setPassword] = useState('');
+
+    // 🟢 RESTORE USE OF VITE_BACKEND_URL and include a robust default
+    const backendUrl = 'https://appointy-zxmd.onrender.com';
+    
+    // 🟢 Use the tokens from the new contexts
+    const { setDToken } = useContext(DoctorContext);
+    const { setAToken } = useContext(AdminContext);
+
+    const navigate = useNavigate();
+
+    const onSubmitHandler = async (event) => {
+        console.log("1. Submitting Form. Event handler triggered."); 
+        event.preventDefault();
+
+        const route = state === 'Admin' ? '/api/admin/login' : '/api/doctor/login';
+        const fullUrl = `${backendUrl}${route}`;
+        console.log("2. Attempting POST to URL:", fullUrl); // MUST SHOW HTTPS URL
+        
+        try {
+            const { data } = await axios.post(fullUrl, {
+                email: email.trim().toLowerCase(),
+                password
+            });
+            
+            if (data.success) {
+                const token = data.token;
+                if (state === 'Admin') {
+                    setAToken(token); // Set token in AdminContext
+                    localStorage.setItem('aToken', token); // Save admin token
+                    navigate('/admin-dashboard'); 
+                } else {
+                    setDToken(token); // Set token in DoctorContext
+                    localStorage.setItem('dToken', token); // Save doctor token
+                    navigate('/doctor-dashboard'); 
+                }
+                toast.success(data.message);
+                console.log("3. Login SUCCESSFUL. Token saved.");
+            } else {
+                console.log("3. Backend Response: Invalid Credentials.");
+                toast.error(data.message);
+            }
+        } catch (err) {
+            console.error("3. Network/Catch Error. Request failed completely.", err); 
+            console.error("Failed URL was:", fullUrl);
+            toast.error(err.response?.data?.message || "Network Error: Could not reach API. Check console.");
+        }
+    };
+
+    // ... rest of the return statement (form and inputs) ...
+};
+
+export default Login;
