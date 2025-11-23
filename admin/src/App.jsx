@@ -84,8 +84,8 @@ export default <App*/
 // src/App.jsx
 
 import React, { useContext } from 'react';
-import { DoctorContext } from '../../context/DoctorContext.jsx'; 
-import { AdminContext } from '../../context/AdminContext.jsx';
+import { DoctorContext } from './context/DoctorContext.jsx'; 
+import { AdminContext } from './context/AdminContext.jsx';
 import { Route, Routes, Navigate, useLocation } from 'react-router-dom';
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
