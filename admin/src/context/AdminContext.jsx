@@ -137,7 +137,7 @@ const AdminContextProvider = (props) => {
     const [appointments, setAppointments] = useState([]);
     const [dashData, setDashData] = useState(false);
     const backendUrl = import.meta.env.VITE_BACKEND_URL;
-    console.log("Loaded Backend URL from .env →", backendUrl);
+    print("Loaded Backend URL from .env →", backendUrl);
 
 
     useEffect(() => {

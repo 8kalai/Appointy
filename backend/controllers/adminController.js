@@ -39,7 +39,7 @@ const loginAdmin = async (req, res) => {
         if (!isMatch) {
             return res.status(401).json({ success: false, message: "Invalid credentials" });
         }
-        console.log("Signing Secret:", process.env.JWT_SECRET);
+        print("Signing Secret:", process.env.JWT_SECRET);
         // Generate JWT token
         const token = jwt.sign(
             { id: admin._id, email: admin.email },

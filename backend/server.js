@@ -175,13 +175,16 @@ app.use(express.json());
 
 // Get the live frontend URL from the environment 
 const FRONTEND_URL = process.env.FRONTEND_URL; 
+const ADMIN_FRONTEND_URL = process.env.ADMIN_FRONTEND_URL;
 console.log(`FRONTEND_URL detected for CORS: ${FRONTEND_URL}`);
+console.log(`ADMIN_FRONTEND_URL detected for CORS: ${ADMIN_FRONTEND_URL}`);
 
 // Define the allowed origins as an array
 const allowedOrigins = [
     "http://localhost:5173",
     "http://127.0.0.0:1", 
-    FRONTEND_URL          
+    FRONTEND_URL,
+    ADMIN_FRONTEND_URL
 ];
 
 // -------------------------------------------------------------
