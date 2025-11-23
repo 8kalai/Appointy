@@ -32,7 +32,7 @@ const isDevelopment = true;
 //    VVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVV
 //    PASTE YOUR LONG ADMIN JWT TOKEN FROM POSTMAN BELOW.
 //    Ensure the token is inside the double quotes ("").
-const DEV_TOKEN = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY5MjJlNzBmYjNiYWZmODFjZjdiMGIyNCIsImVtYWlsIjoiYWRtaW5AbmV3Y29tcGFueS5jb20iLCJpYXQiOjE3NjM5MDgzMDIsImV4cCI6MTc2MzkxMTkwMn0.TpPwSbJj7JyuU_3y8Sj_svEgQOqj6Jrrx2isR63CiMI"; 
+const DEV_TOKEN = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY5MjJlNzBmYjNiYWZmODFjZjdiMGIyNCIsImVtYWlsIjoiYWRtaW5AbmV3Y29tcGFueS5jb20iLCJpYXQiOjE3NjM5MDg5NTMsImV4cCI6MTc2MzkxMjU1M30.45edaBAg2ISejXwaOeXGLuBHN_e4XpU8NLEzJ0Uam_M"; 
 //    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 
