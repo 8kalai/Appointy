@@ -246,92 +246,100 @@ import { toast } from 'react-toastify';
 import { useNavigate } from 'react-router-dom';
 
 const Login = () => {
-    const [state, setState] = useState('Admin');
-    const [email, setEmail] = useState('');
-    const [password, setPassword] = useState('');
+    const [state, setState] = useState('Admin');
+    const [email, setEmail] = useState('');
+    const [password, setPassword] = useState('');
 
-    // Using VITE_BACKEND_URL as the variable pointing to your Backend API URL
-    const backendUrl = import.meta.env.VITE_BACKEND_URL || 'http://localhost:4000';
-    const { setDToken } = useContext(DoctorContext);
-    const { setAToken } = useContext(AdminContext);
+    // Using VITE_BACKEND_URL as the variable pointing to your Backend API URL
+    // This value must be the HTTPS URL of your deployed backend service!
+    const backendUrl = import.meta.env.VITE_BACKEND_URL || 'http://localhost:4000';
+    const { setDToken } = useContext(DoctorContext);
+    const { setAToken } = useContext(AdminContext);
 
-    const navigate = useNavigate();
+    const navigate = useNavigate();
 
-    const onSubmitHandler = async (event) => {
-        event.preventDefault();
-        try {
-            const route = state === 'Admin' ? '/api/admin/login' : '/api/doctor/login';
+    const onSubmitHandler = async (event) => {
+        event.preventDefault();
 
-            // 🟢 FIX: The Axios call is now active and sends credentials
-            const { data } = await axios.post(`${backendUrl}${route}`, {
-                email: email.trim().toLowerCase(),
-                password
-            });
-            
-            if (data.success) {
-                const token = data.token;
-                if (state === 'Admin') {
-                    setAToken(token);
-                    // ✅ Correctly saving JWT to local storage
-                    localStorage.setItem('aToken', token);
-                    navigate('/admin-dashboard'); 
-                } else {
-                    setDToken(token);
-                    localStorage.setItem('dToken', token);
-                    navigate('/doctor');
-                }
-                toast.success(data.message);
-            } else {
-                // This catches genuine 401s from the backend when credentials are truly wrong
-                toast.error(data.message);
-            }
-        } catch (err) {
-            // Catches network errors, 404, 500, and failed connections
-            console.error("Login attempt failed:", err.response?.data?.message || err.message); 
-            toast.error(err.response?.data?.message || "Login failed. Check browser console for details.");
-        }
-    };
+        const route = state === 'Admin' ? '/api/admin/login' : '/api/doctor/login';
+        // 🚨 CRITICAL DEBUGGING STEP: Log the full URL being attempted
+        const fullUrl = `${backendUrl}${route}`;
+        console.log("Attempting login POST to:", fullUrl);
+        
+        try {
+            // 🟢 The Axios call to the constructed URL
+            const { data } = await axios.post(fullUrl, {
+                email: email.trim().toLowerCase(),
+                password
+            });
+            
+            if (data.success) {
+                const token = data.token;
+                if (state === 'Admin') {
+                    setAToken(token);
+                    // ✅ Correctly saving JWT to local storage
+                    localStorage.setItem('aToken', token);
+                    // ✅ CORRECTED NAVIGATION PATH
+                    navigate('/admin-dashboard'); 
+                } else {
+                    setDToken(token);
+                    localStorage.setItem('dToken', token);
+                    navigate('/doctor-dashboard'); // Assuming doctor also uses -dashboard path
+                }
+                // Show success toast
+                toast.success(data.message);
+            } else {
+                // This runs if the backend sends success: false (invalid credentials)
+                toast.error(data.message);
+            }
+        } catch (err) {
+            // This runs if the network request fails (CORS, 404, or wrong URL)
+            console.error("Login attempt failed:", err.response?.data?.message || err.message); 
+            console.error("Failed URL was:", fullUrl);
+            
+            // Display the generic error that you are currently seeing
+            toast.error(err.response?.data?.message || "Login failed. Check browser console for details.");
+        }
+    };
 
-    return (
-        <form onSubmit={onSubmitHandler} className='min-h-[80vh] flex items-center'>
-            <div className='flex flex-col gap-3 m-auto items-start p-8 min-w-[340px] sm:min-w-96 border rounded-xl text-[#5E5E5E] text-sm shadow-lg'>
-                <p className='text-2xl font-semibold m-auto'>
-                    <span className='text-primary'>{state}</span> Login
-                </p>
-                <div className='w-full'>
-                    <p>Email</p>
-                    <input 
+    return (
+        <form onSubmit={onSubmitHandler} className='min-h-[80vh] flex items-center'>
+            <div className='flex flex-col gap-3 m-auto items-start p-8 min-w-[340px] sm:min-w-96 border rounded-xl text-[#5E5E5E] text-sm shadow-lg'>
+                <p className='text-2xl font-semibold m-auto'>
+                    <span className='text-primary'>{state}</span> Login
+                </p>
+                <div className='w-full'>
+                    <p>Email</p>
+                    <input 
                         type="email" 
                         required 
                         value={email} 
                         onChange={e => setEmail(e.target.value)}
-                        // 🟢 FIX 3: ADDED id and name attributes
                         id="admin-email" 
                         name="adminEmail"
-                        className='border border-[#DADADA] rounded w-full p-2 mt-1' 
+                        className='border border-[#DADADA] rounded w-full p-2 mt-1' 
                     />
-                </div>
-                <div className='w-full'>
-                    <p>Password</p>
-                    <input 
+                </div>
+                <div className='w-full'>
+                    <p>Password</p>
+                    <input 
                         type="password" 
                         required 
                         value={password} 
                         onChange={e => setPassword(e.target.value)}
-                        // 🟢 FIX 3: ADDED id and name attributes
                         id="admin-password" 
                         name="adminPassword"
-                        className='border border-[#DADADA] rounded w-full p-2 mt-1' 
+                        className='border border-[#DADADA] rounded w-full p-2 mt-1' 
                     />
-                </div>
-                <button className='bg-primary text-white w-full py-2 rounded-md text-base'>Login</button>
-                {state === 'Admin'
-                    ? <p>Doctor Login? <span onClick={() => setState('Doctor')} className='text-primary underline cursor-pointer'>Click here</span></p>
-                    : <p>Admin Login? <span onClick={() => setState('Admin')} className='text-primary underline cursor-pointer'>Click here</span></p>
-                }
-            </div>
-        </form>
-    );
+                </div>
+                <button className='bg-primary text-white w-full py-2 rounded-md text-base'>Login</button>
+                {state === 'Admin'
+                    ? <p>Doctor Login? <span onClick={() => setState('Doctor')} className='text-primary underline cursor-pointer'>Click here</span></p>
+                    : <p>Admin Login? <span onClick={() => setState('Admin')} className='text-primary underline cursor-pointer'>Click here</span></p>
+                }
+            </div>
+        </form>
+    );
 };
 
 export default Login;
