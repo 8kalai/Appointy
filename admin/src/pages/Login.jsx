@@ -286,7 +286,7 @@ const Login = () => {
                 toast.error(data.message);
             }
         } catch (err) {
-            // This catches network errors or other server errors (404 Not Found, 500 Server Error)
+            // Catches network errors, 404, 500, and failed connections
             console.error("Login attempt failed:", err.response?.data?.message || err.message); 
             toast.error(err.response?.data?.message || "Login failed. Check browser console for details.");
         }
@@ -300,13 +300,29 @@ const Login = () => {
                 </p>
                 <div className='w-full'>
                     <p>Email</p>
-                    <input type="email" required value={email} onChange={e => setEmail(e.target.value)}
-                        className='border border-[#DADADA] rounded w-full p-2 mt-1' />
+                    <input 
+                        type="email" 
+                        required 
+                        value={email} 
+                        onChange={e => setEmail(e.target.value)}
+                        // 🟢 FIX 3: ADDED id and name attributes
+                        id="admin-email" 
+                        name="adminEmail"
+                        className='border border-[#DADADA] rounded w-full p-2 mt-1' 
+                    />
                 </div>
                 <div className='w-full'>
                     <p>Password</p>
-                    <input type="password" required value={password} onChange={e => setPassword(e.target.value)}
-                        className='border border-[#DADADA] rounded w-full p-2 mt-1' />
+                    <input 
+                        type="password" 
+                        required 
+                        value={password} 
+                        onChange={e => setPassword(e.target.value)}
+                        // 🟢 FIX 3: ADDED id and name attributes
+                        id="admin-password" 
+                        name="adminPassword"
+                        className='border border-[#DADADA] rounded w-full p-2 mt-1' 
+                    />
                 </div>
                 <button className='bg-primary text-white w-full py-2 rounded-md text-base'>Login</button>
                 {state === 'Admin'

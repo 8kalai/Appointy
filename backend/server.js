@@ -192,11 +192,9 @@ const allowedOrigins = [
 // -------------------------------------------------------------
 app.use(cors({
     origin: (origin, callback) => {
-        // If the origin is in the allowed list or if it's a server-to-server request (no origin header), allow it.
         if (!origin || allowedOrigins.includes(origin)) {
             callback(null, true);
         } else {
-            console.log(`CORS Error: Origin ${origin} not allowed.`);
             callback(new Error('Not allowed by CORS'));
         }
     },
