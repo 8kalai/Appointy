@@ -344,49 +344,35 @@ const Login = () => {
 
 export default Login;*/
 
+// Login.jsx
+
 import axios from 'axios';
 import React, { useContext, useState } from 'react';
-import { DoctorContext } from '../context/DoctorContext';
-import { AdminContext } from '../context/AdminContext';
+import { AdminContext } from '../context/AdminContext'; // 🟢 Use the new stable context
 import { toast } from 'react-toastify';
 import { useNavigate } from 'react-router-dom';
 
 const Login = () => {
-    // 🟢 CRITICAL TEST: If this log doesn't show up, the whole component failed to render.
-    console.log("Login Component: Initialization started."); 
+    console.log("LOGIN_STABLE: Component initialized."); 
 
     const [state, setState] = useState('Admin');
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
 
-    // 🛑 TEMPORARY FIX: HARDCODE DEPLOYED URL TO ELIMINATE ENV VARIABLE ERRORS
-    // ----------------------------------------------------------------------
-    // REPLACE THIS PLACEHOLDER with your actual live backend HTTPS URL (e.g., 'https://my-backend-api.onrender.com')
-    const backendUrl = 'https://appointy-zxmd.onrender.com'; 
-    // ----------------------------------------------------------------------
+    // 🟢 GETTING URL AND SETTERS FROM ADMIN CONTEXT
+    const { setAToken, setDToken, backendUrl } = useContext(AdminContext); 
     
-    // Fallback/local development logic is removed temporarily for stability testing:
-    // const backendUrl = import.meta.env.VITE_BACKEND_URL || 'http://localhost:4000'; 
-    
-    const { setDToken } = useContext(DoctorContext);
-    const { setAToken } = useContext(AdminContext);
-
     const navigate = useNavigate();
 
     const onSubmitHandler = async (event) => {
-        // 🟢 CRITICAL TEST: If this log doesn't show up, the form submit event failed.
-        console.log("1. Submitting Form. Event handler triggered."); 
-        
+        console.log("LOGIN_STABLE: Submit handler triggered."); 
         event.preventDefault();
 
         const route = state === 'Admin' ? '/api/admin/login' : '/api/doctor/login';
-        
-        // Log the full, hardcoded URL being sent
         const fullUrl = `${backendUrl}${route}`;
-        console.log("2. Attempting POST to URL:", fullUrl);
+        console.log("LOGIN_STABLE: Attempting POST to URL:", fullUrl);
 
         try {
-            // The Axios call to the constructed URL
             const { data } = await axios.post(fullUrl, {
                 email: email.trim().toLowerCase(),
                 password
@@ -394,44 +380,36 @@ const Login = () => {
             
             if (data.success) {
                 const token = data.token;
+                
                 if (state === 'Admin') {
-                    setAToken(token);
-                    localStorage.setItem('aToken', token);
-                    
-                    // ✅ Corrected Navigation
+                    setAToken(token); // Set context state
+                    localStorage.setItem('aToken', token); // Save to storage
                     navigate('/admin-dashboard'); 
                 } else {
-                    setDToken(token);
-                    localStorage.setItem('dToken', token);
-                    
-                    // Assuming doctor route should also be corrected to -dashboard
+                    setDDoken(token); // Set context state
+                    localStorage.setItem('dToken', token); // Save to storage
                     navigate('/doctor-dashboard'); 
                 }
-                // Show success toast
-                toast.success(data.message);
-                console.log("3. Login SUCCESSFUL. Token saved.");
+                
+                toast.success(data.message || "Login successful!");
+                console.log("LOGIN_STABLE: SUCCESS! Navigating...");
             } else {
-                // This runs if the backend sends success: false (invalid credentials)
-                console.log("3. Backend Response: Invalid Credentials.");
+                console.log("LOGIN_STABLE: Invalid credentials from backend.");
                 toast.error(data.message);
             }
         } catch (err) {
-            // This runs if the network request fails (CORS, 404, or wrong URL)
-            console.error("3. Network/Catch Error. Request failed completely.", err); 
-            console.error("Failed URL was:", fullUrl);
-            
-            // Display the generic error
-            toast.error(err.response?.data?.message || "Network Error: Could not reach API. Check console.");
+            console.error("LOGIN_STABLE: Network Error or Server failure.", err); 
+            toast.error(err.response?.data?.message || "Network Error: API unreachable. Check console.");
         }
     };
 
     return (
         <form onSubmit={onSubmitHandler} className='min-h-[80vh] flex items-center'>
+            {/* ... rest of your form JSX remains here ... */}
             <div className='flex flex-col gap-3 m-auto items-start p-8 min-w-[340px] sm:min-w-96 border rounded-xl text-[#5E5E5E] text-sm shadow-lg'>
                 <p className='text-2xl font-semibold m-auto'>
                     <span className='text-primary'>{state}</span> Login
                 </p>
-                {/* ... Email and Password Inputs remain the same ... */}
                 <div className='w-full'>
                     <p>Email</p>
                     <input 
@@ -457,7 +435,7 @@ const Login = () => {
                     />
                 </div>
                 <button 
-                    type="submit" // ✅ Ensures the button triggers form submission
+                    type="submit" 
                     className='bg-primary text-white w-full py-2 rounded-md text-base'
                 >
                     Login
