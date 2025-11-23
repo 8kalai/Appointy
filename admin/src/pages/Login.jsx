@@ -346,32 +346,36 @@ export default Login;*/
 
 // Login.jsx
 
+// src/pages/Login/Login.jsx
+
 import axios from 'axios';
 import React, { useContext, useState } from 'react';
-import { AdminContext } from '../context/AdminContext'; // 🟢 Use the new stable context
+import { DoctorContext } from '../../context/DoctorContext'; // Ensure this path is correct
+import { AdminContext } from '../../context/AdminContext'; // Ensure this path is correct
 import { toast } from 'react-toastify';
 import { useNavigate } from 'react-router-dom';
 
 const Login = () => {
-    console.log("LOGIN_STABLE: Component initialized."); 
+    // 🟢 Use the existing contexts that are provided in main.jsx
+    const { setDToken } = useContext(DoctorContext); 
+    const { setAToken } = useContext(AdminContext);
 
     const [state, setState] = useState('Admin');
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
 
-    // 🟢 GETTING URL AND SETTERS FROM ADMIN CONTEXT
-    const { setAToken, setDToken, backendUrl } = useContext(AdminContext); 
+    // 🛑 CRITICAL FIX: HARDCODE DEPLOYED URL
+    // REPLACE THIS with your actual live backend HTTPS URL (e.g., 'https://appointy-zxmd.onrender.com')
+    const backendUrl = 'https://appointy-zxmd.onrender.com'; 
     
     const navigate = useNavigate();
 
     const onSubmitHandler = async (event) => {
-        console.log("LOGIN_STABLE: Submit handler triggered."); 
         event.preventDefault();
 
         const route = state === 'Admin' ? '/api/admin/login' : '/api/doctor/login';
         const fullUrl = `${backendUrl}${route}`;
-        console.log("LOGIN_STABLE: Attempting POST to URL:", fullUrl);
-
+        
         try {
             const { data } = await axios.post(fullUrl, {
                 email: email.trim().toLowerCase(),
@@ -382,30 +386,28 @@ const Login = () => {
                 const token = data.token;
                 
                 if (state === 'Admin') {
-                    setAToken(token); // Set context state
-                    localStorage.setItem('aToken', token); // Save to storage
-                    navigate('/admin-dashboard'); 
+                    // Set context state and local storage for Admin
+                    setAToken(token); 
+                    localStorage.setItem('aToken', token); 
                 } else {
-                    setDDoken(token); // Set context state
-                    localStorage.setItem('dToken', token); // Save to storage
-                    navigate('/doctor-dashboard'); 
+                    // Set context state and local storage for Doctor
+                    setDToken(token); 
+                    localStorage.setItem('dToken', token); 
                 }
                 
                 toast.success(data.message || "Login successful!");
-                console.log("LOGIN_STABLE: SUCCESS! Navigating...");
+                
+                // Navigation will now happen automatically via the logic in App.jsx (see Section 2)
             } else {
-                console.log("LOGIN_STABLE: Invalid credentials from backend.");
                 toast.error(data.message);
             }
         } catch (err) {
-            console.error("LOGIN_STABLE: Network Error or Server failure.", err); 
-            toast.error(err.response?.data?.message || "Network Error: API unreachable. Check console.");
+            toast.error(err.response?.data?.message || "Login Failed: Check network/credentials.");
         }
     };
 
     return (
         <form onSubmit={onSubmitHandler} className='min-h-[80vh] flex items-center'>
-            {/* ... rest of your form JSX remains here ... */}
             <div className='flex flex-col gap-3 m-auto items-start p-8 min-w-[340px] sm:min-w-96 border rounded-xl text-[#5E5E5E] text-sm shadow-lg'>
                 <p className='text-2xl font-semibold m-auto'>
                     <span className='text-primary'>{state}</span> Login
