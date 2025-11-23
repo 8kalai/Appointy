@@ -208,6 +208,50 @@ import userModel from "../models/userModel.js"
 // API for admin login
 import Admin from "../models/adminModel.js";
 
+// =======================================================
+// 🟢 TEMPORARY CONTROLLER: USE ONCE AND DELETE/REMOVE
+// =======================================================
+const createInitialAdmin = async (req, res) => {
+    try {
+        // 🚨 USE THESE CREDENTIALS FOR LOGIN 🚨
+        const tempEmail = "admin@newcompany.com"; 
+        const tempPassword = "NewSecurePassword123!";
+        const tempName = "Super Admin";
+        // -----------------------------------------------------------
+
+        if (!tempEmail || !tempPassword) {
+            return res.status(400).json({ success: false, message: "Missing temporary credentials." });
+        }
+
+        // 1. Check if the admin already exists (optional, but prevents duplicates)
+        const existingAdmin = await Admin.findOne({ email: tempEmail });
+        if (existingAdmin) {
+            return res.status(400).json({ success: false, message: "Admin user already exists." });
+        }
+
+        // 2. Hash the new password
+        const salt = await bcrypt.genSalt(10);
+        const hashedPassword = await bcrypt.hash(tempPassword, salt);
+
+        // 3. Create and save the new Admin instance
+        const newAdmin = new Admin({
+            name: tempName,
+            email: tempEmail,
+            password: hashedPassword,
+        });
+
+        await newAdmin.save();
+
+        console.log(`New Admin Created: ${tempEmail}`);
+        return res.status(201).json({ success: true, message: `New Admin Created: ${tempEmail}` });
+
+    } catch (error) {
+        console.error("Error creating initial admin:", error);
+        return res.status(500).json({ success: false, message: "Server error during admin creation." });
+    }
+};
+
+
 // Admin login controller
 const loginAdmin = async (req, res) => {
     try {
@@ -275,7 +319,7 @@ const addDoctor = async (req, res) => {
       return res.status(400).json({ success: false, message: "Please enter a valid email" });
     }
     
-    // 🟢 NEW CHECK: Ensure the email isn't already registered
+    // Ensure the email isn't already registered
     const exists = await doctorModel.findOne({ email });
     if (exists) {
         return res.status(400).json({ success: false, message: "A doctor with this email already exists." });
@@ -395,4 +439,4 @@ const adminDashboard = async (req, res) => {
 }
 
 
-export {loginAdmin, addDoctor, allDoctors, appointmentsAdmin, appointmentCancel, adminDashboard}
+export {loginAdmin, addDoctor, allDoctors, appointmentsAdmin, appointmentCancel, adminDashboard, createInitialAdmin}

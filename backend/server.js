@@ -151,10 +151,8 @@ import { fileURLToPath } from 'url';
 import fs from 'fs';
 // ------------------------------------
 
-// REQUIRED for creating hashed admin password
-import bcrypt from "bcrypt";
-// REQUIRED for auto-creating admin
-import adminModel from "./models/adminModel.js";
+// ❌ REMOVED: import bcrypt (no longer needed in server file)
+// ❌ REMOVED: import adminModel (no longer needed in server file)
 
 // ** Define __dirname for ES Modules **
 const __filename = fileURLToPath(import.meta.url);
@@ -184,11 +182,11 @@ const allowedOrigins = [
     "http://localhost:5173",
     "http://127.0.0.0:1", 
     FRONTEND_URL,
-    ADMIN_FRONTEND_URL
+    ADMIN_FRONTEND_URL
 ];
 
 // -------------------------------------------------------------
-// 🟢 UPDATED: Using a single, custom CORS middleware block
+// 🟢 CORS middleware 
 // -------------------------------------------------------------
 app.use(cors({
     origin: (origin, callback) => {
@@ -226,41 +224,12 @@ app.get('/test-db', (req, res) => {
   }
 });
 
-// -------------------------------------------
-// 🔥 AUTO-CREATE DEFAULT ADMIN (runs 1 time)
-// -------------------------------------------
 
-const createDefaultAdmin = async () => {
-  try {
-    const adminEmail = "admin@gmail.com";
-    const adminPassword = "admin123";
+// ❌ REMOVED: The call to createDefaultAdmin is gone!
+// mongoose.connection.once("open", () => {
+//   createDefaultAdmin();
+// });
 
-    const existing = await adminModel.findOne({ email: adminEmail });
-
-    if (!existing) {
-      const hashedPassword = await bcrypt.hash(adminPassword, 10);
-
-      await adminModel.create({
-        name: "Admin",
-        email: adminEmail,
-        password: hashedPassword
-      });
-
-      console.log("🔥 Default admin created:");
-      console.log("Email: admin@gmail.com");
-      console.log("Password: admin123");
-    } else {
-      console.log("✔ Admin already exists");
-    }
-  } catch (error) {
-    console.error("Error creating default admin:", error);
-  }
-};
-
-// Run admin creation after DB connection
-mongoose.connection.once("open", () => {
-  createDefaultAdmin();
-});
 
 // ** Ensure uploads directory exists on server start **
 const uploadDir = path.join(__dirname, 'admin', 'assets');
