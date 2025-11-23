@@ -350,8 +350,10 @@ export default Login;*/
 
 import axios from 'axios';
 import React, { useContext, useState } from 'react';
-import { DoctorContext } from '../../context/DoctorContext.jsx'; // Ensure this path is correct
-import { AdminContext } from '../../context/AdminContext.jsx'; // Ensure this path is correct
+// 🟢 FIX: Corrected path from '../../context/' to '../context/'
+import { DoctorContext } from '../context/DoctorContext.jsx'; 
+// 🟢 FIX: Corrected path from '../../context/' to '../context/'
+import { AdminContext } from '../context/AdminContext.jsx'; 
 import { toast } from 'react-toastify';
 import { useNavigate } from 'react-router-dom';
 
@@ -365,7 +367,7 @@ const Login = () => {
     const [password, setPassword] = useState('');
 
     // 🛑 CRITICAL FIX: HARDCODE DEPLOYED URL
-    // REPLACE THIS with your actual live backend HTTPS URL (e.g., 'https://appointy-zxmd.onrender.com')
+    // This is correct as per our previous discussion.
     const backendUrl = 'https://appointy-zxmd.onrender.com'; 
     
     const navigate = useNavigate();
