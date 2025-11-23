@@ -368,7 +368,7 @@ const Login = () => {
                 }
                 
                 // Show success toast
-                toast.success(data.message);
+                toast.success(data.message || "Login successful!");
                 console.log("3. Login SUCCESSFUL. Token saved.");
             } else {
                 // This runs if the backend sends success: false (invalid credentials)
