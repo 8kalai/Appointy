@@ -252,7 +252,7 @@ const Login = () => {
 
     // Using VITE_BACKEND_URL as the variable pointing to your Backend API URL
     // This value must be the HTTPS URL of your deployed backend service!
-    const backendUrl = import.meta.env.VITE_BACKEND_URL || 'http://localhost:4000';
+    const backendUrl = import.meta.env.VITE_BACKEND_URL || 'https://appointy-zxmd.onrender.com';
     const { setDToken } = useContext(DoctorContext);
     const { setAToken } = useContext(AdminContext);
 
