@@ -274,7 +274,7 @@ const Login = () => {
                     setAToken(token);
                     // ✅ Correctly saving JWT to local storage
                     localStorage.setItem('aToken', token);
-                    navigate('/admin'); 
+                    navigate('/admin-dashboard'); 
                 } else {
                     setDToken(token);
                     localStorage.setItem('dToken', token);
