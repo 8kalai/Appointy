@@ -350,8 +350,8 @@ export default Login;*/
 
 import axios from 'axios';
 import React, { useContext, useState } from 'react';
-import { DoctorContext } from '../../context/DoctorContext'; // Ensure this path is correct
-import { AdminContext } from '../../context/AdminContext'; // Ensure this path is correct
+import { DoctorContext } from '../../context/DoctorContext.jsx'; // Ensure this path is correct
+import { AdminContext } from '../../context/AdminContext.jsx'; // Ensure this path is correct
 import { toast } from 'react-toastify';
 import { useNavigate } from 'react-router-dom';
 
