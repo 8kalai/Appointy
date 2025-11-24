@@ -104,16 +104,17 @@ const AppContextProvider = (props) => {
     };
 
     const loadUserProfileData = async () => {
-        if (!uToken) return;
-        try {
-            const { data } = await api.get("/api/user/get-profile", {
-                headers: { token: uToken }
-            });
-            if (data.success) setUserData(data.userData);
-        } catch {
-            toast.error("Failed to load profile");
-        }
-    };
+    if (!uToken) return;
+    try {
+        const { data } = await api.post("/api/user/get-profile", {}, {
+            headers: { token: uToken }
+        });
+        if (data.success) setUserData(data.userData);
+    } catch {
+        toast.error("Failed to load profile");
+    }
+};
+
 
     useEffect(() => {
         getDoctorsData();
