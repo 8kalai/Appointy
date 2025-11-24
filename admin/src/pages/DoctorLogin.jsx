@@ -486,9 +486,13 @@ const DoctorLogin = () => {
             });
 
             if (data.success) {
-                localStorage.setItem('dToken', data.token);
+                // Store doctor ID instead of token
+                localStorage.setItem('doctorId', data.doctorId);
+
                 toast.success("Login successful!");
-                navigate('/doctor-dashboard');
+
+                // Navigate to doctor dashboard
+                navigate('/doctor/dashboard');
             } else {
                 toast.error(data.message || "Invalid login.");
             }
