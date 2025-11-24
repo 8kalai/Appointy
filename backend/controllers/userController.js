@@ -700,6 +700,7 @@ export const getProfile = async (req, res) => {
   }
 };
 
+
 // List User Appointments
 export const listAppointment = async (req, res) => {
   try {
