@@ -78,91 +78,110 @@ export default AppContextProvider*/
 
 import { createContext, useEffect, useState } from "react";
 import { toast } from "react-toastify";
-import axios from 'axios'
+import axios from 'axios';
 
-export const AppContext = createContext()
+export const AppContext = createContext();
 
 const AppContextProvider = (props) => {
-    const currencySymbol = '₹'
-    
-    // 🛑 CRITICAL FIX: HARDCODE THE BACKEND URL TEMPORARILY
-    // The previous setup was causing multiple concatenation errors on deploy.
-    // Replace the placeholder with the correct URL: https://appointy-zxmd.onrender.com
-    const backendUrl = 'https://appointy-zxmd.onrender.com'; 
-    // const backendUrl = import.meta.env.VITE_BACKEND_URL // <-- The buggy line
 
-    const [doctors, setDoctors] = useState([])
-    const [token, setToken] = useState(localStorage.getItem('token') || '')
-    const [userData, setUserData] = useState(false)
+    const currencySymbol = '₹';
 
-    // 🟢 OPTIONAL: Define Axios instance to clean up repeated URL construction
+    // Backend URL
+    const backendUrl = "https://appointy-zxmd.onrender.com";
+
+    const [doctors, setDoctors] = useState([]);
+
+    // ✔ FIXED: Use ONLY 'uToken'
+    const [uToken, setUToken] = useState(localStorage.getItem("uToken") || "");
+
+    // Logged-in user data
+    const [userData, setUserData] = useState(false);
+
+    // Axios instance
     const api = axios.create({
-        baseURL: backendUrl 
+        baseURL: backendUrl
     });
 
+    // =============================
+    //   GET ALL DOCTORS
+    // =============================
     const getDoctorsData = async () => {
         try {
-            // ✅ Corrected Axios call using the base URL instance
-            const { data } = await api.get('/api/doctor/list') 
+            const { data } = await api.get("/api/doctor/list");
+
             if (data.success) {
-                setDoctors(data.doctors)
+                setDoctors(data.doctors);
             } else {
-                toast.error(data.message)
+                toast.error(data.message);
             }
         } catch (error) {
-            console.error("Error fetching doctors:", error)
-            // 🛑 The 404 error is caught here
-            toast.error("Failed to load doctors: " + (error.response?.data?.message || "Check network connection."));
+            console.error("Error fetching doctors:", error);
+            toast.error("Failed to load doctors.");
         }
-    }
+    };
 
+    // =============================
+    //   LOAD USER PROFILE
+    // =============================
     const loadUserProfileData = async () => {
         try {
-            // ✅ Corrected Axios call using the base URL instance
-            const { data } = await api.get('/api/user/get-profile', {
-                headers: { token }
-            })
+            const { data } = await api.get("/api/user/get-profile", {
+                headers: { token: uToken },
+            });
 
             if (data.success) {
-                const safeUserData = {
+                const safeUser = {
                     ...data.userData,
-                    address: data.userData.address || { line1: '', line2: '' },
-                    gender: data.userData.gender || '',
-                    dob: data.userData.dob || ''
-                }
-                setUserData(safeUserData)
+                    address: data.userData.address || { line1: "", line2: "" },
+                    gender: data.userData.gender || "",
+                    dob: data.userData.dob || "",
+                };
+
+                setUserData(safeUser);
             } else {
-                toast.error(data.message)
+                toast.error(data.message);
             }
         } catch (error) {
-            console.error("Error loading user profile:", error)
-            toast.error(error.message)
+            console.error("Error loading user profile:", error);
+            toast.error("Could not load user profile.");
         }
-    }
+    };
 
+    // LOAD DOCTORS ONCE
     useEffect(() => {
-        getDoctorsData()
-    }, [])
+        getDoctorsData();
+    }, []);
 
+    // LOAD USER PROFILE WHEN LOGGED IN
     useEffect(() => {
-        if (token) {
-            loadUserProfileData()
+        if (uToken) {
+            loadUserProfileData();
         }
-    }, [token])
+    }, [uToken]);
 
+
+    // =============================
+    //   CONTEXT VALUE
+    // =============================
     const value = {
-        doctors, getDoctorsData,
+        doctors,
+        getDoctorsData,
         currencySymbol,
-        backendUrl, // Keep backendUrl for external access if needed
-        token, setToken,
-        userData, setUserData, loadUserProfileData
-    }
+        backendUrl,
+
+        // USER AUTH
+        uToken,
+        setUToken,
+        userData,
+        setUserData,
+        loadUserProfileData,
+    };
 
     return (
         <AppContext.Provider value={value}>
             {props.children}
         </AppContext.Provider>
-    )
-}
+    );
+};
 
-export default AppContextProvider
+export default AppContextProvider;
