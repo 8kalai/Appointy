@@ -24,55 +24,50 @@ import { createContext, useState, useEffect } from "react";
 
 export const AdminContext = createContext();
 
-// 1. ⚠️ Development Toggle: Set this to true during local development/testing.
-//    Set to false before deploying to production.
-const isDevelopment = true; 
+// Toggle manually
+const isDevelopment = true;
 
-// 2. 🔑 STATIC DEVELOPMENT TOKEN:
-//    VVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVV
-//    PASTE YOUR LONG ADMIN JWT TOKEN FROM POSTMAN BELOW.
-//    Ensure the token is inside the double quotes ("").
-const DEV_TOKEN = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY5MjJlNzBmYjNiYWZmODFjZjdiMGIyNCIsImVtYWlsIjoiYWRtaW5AbmV3Y29tcGFueS5jb20iLCJpYXQiOjE3NjM5MTMwNzQsImV4cCI6MTc2MzkxNjY3NH0.Gqo173yvVG2tcYJ8XHAZdVsuALU2JxFZv4AWZQcgXDk"; 
-//    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+// Your dev token
+const DEV_TOKEN = "Kalai08";
 
+// Helper for initial token
+const getInitialToken = () => {
+    if (isDevelopment) {
+        return DEV_TOKEN || "";  // always use dev token in dev mode
+    }
+    return localStorage.getItem("aToken") || "";
+};
 
 const AdminContextProvider = (props) => {
-
-    // Function to get the initial token state
-    const getInitialToken = () => {
-        if (isDevelopment) {
-            return DEV_TOKEN; // Use static token for dev bypass
-        }
-        // Fallback to localStorage for standard login flow
-        return localStorage.getItem('aToken') || ''; 
-    };
-
-    // State initialization
     const [aToken, setAToken] = useState(getInitialToken);
-    
-    // Assuming backendUrl is also stored here or defined statically
-    // You must update "YOUR_DEPLOYED_BACKEND_HTTPS_URL" with your actual Render backend URL
-    const [backendUrl, setBackendUrl] = useState(
-        isDevelopment 
-            ? "http://localhost:4000" // Use your local backend URL for dev
-            : "https://appointy-zxmd.onrender.com" // Use your deployed Render URL
-    );
 
-    // Effect to keep localStorage updated if the token changes (standard)
+    // Backend URL based on environment
+    const backendUrl = isDevelopment
+        ? "http://localhost:4000"
+        : "https://appointy-zxmd.onrender.com";
+
+    // Sync token ONLY when not in development
     useEffect(() => {
-        if (aToken && !isDevelopment) {
-            localStorage.setItem('aToken', aToken);
-        } else if (!aToken && !isDevelopment) {
-            localStorage.removeItem('aToken');
+        if (!isDevelopment) {
+            if (aToken) {
+                localStorage.setItem("aToken", aToken);
+            } else {
+                localStorage.removeItem("aToken");
+            }
         }
     }, [aToken]);
+
+    // if dev token is missing, prevent invalid signature
+    useEffect(() => {
+        if (isDevelopment && !DEV_TOKEN) {
+            console.warn("⚠ DEV_TOKEN is empty. Set a valid token to avoid invalid signature.");
+        }
+    }, []);
 
     const contextValue = {
         aToken,
         setAToken,
-        backendUrl,
-        setBackendUrl,
-        // Add other state variables here (e.g., adminData, etc.)
+        backendUrl
     };
 
     return (
@@ -83,6 +78,3 @@ const AdminContextProvider = (props) => {
 };
 
 export default AdminContextProvider;
-
-
-
