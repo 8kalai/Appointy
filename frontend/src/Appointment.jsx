@@ -467,9 +467,10 @@ const Appointment = () => {
     )
 
     if (data.success) {
-      toast.success("Appointment booked successfully")
-      getDoctorsData()
-      navigate('/my-appointments')
+      toast.success("Appointment booked successfully");
+      getDoctorsData(); 
+      navigate("/my-appointments"); 
+
     } else {
       toast.error(data.message)
     }

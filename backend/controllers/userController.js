@@ -595,16 +595,19 @@ const bookAppointment = async (req, res) => {
 
 
 // --- LIST APPOINTMENTS ---
+
 const listAppointment = async (req, res) => {
-    try {
-        const userId = req.user.id
-        const appointments = await appointmentModel.find({ userId }).sort({ date: -1 })
-        res.json({ success: true, appointments })
-    } catch (error) {
-        console.log(error)
-        res.json({ success: false, message: error.message })
-    }
-}
+  try {
+    const { userId } = req.body; // comes from authUser
+    const appointments = await appointmentModel.find({ userId });
+    res.json({ success: true, appointments });
+  } catch (error) {
+    res.json({ success: false, message: error.message });
+  }
+};
+
+
+
 
 
 // --- CANCEL APPOINTMENT ---
