@@ -641,15 +641,28 @@ const appointmentCancel = async (req, res) => {
 
 const allDoctors = async (req, res) => {
     try {
+        // Find all doctors in the database
+        const doctors = await Doctor.find({});
 
-        const doctors = await doctorModel.find({}).select('-password')
-        res.json({ success: true, doctors })
+        if (!doctors) {
+            return res.json({ success: false, message: "No doctors found." });
+        }
+
+        // Return the list of doctors
+        res.json({
+            success: true,
+            data: doctors,
+            message: "Doctor list retrieved successfully."
+        });
 
     } catch (error) {
-        console.log(error)
-        res.json({ success: false, message: error.message })
+        console.log("Error in allDoctors controller:", error);
+        res.json({
+            success: false,
+            message: "Error retrieving doctors list."
+        });
     }
-}
+};
 
 // API to get all appointments list
 const appointmentsAdmin = async (req, res) => {
