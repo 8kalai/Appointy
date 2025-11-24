@@ -563,6 +563,10 @@ const Login = () => {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
 
+  // Email validation rule state
+  const [emailValid, setEmailValid] = useState(false)
+
+  // Password rules
   const [rules, setRules] = useState({
     length: false,
     number: false,
@@ -572,6 +576,14 @@ const Login = () => {
   })
 
   const navigate = useNavigate()
+
+  // Email validation
+  const handleEmail = (value) => {
+    setEmail(value)
+
+    const pattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+    setEmailValid(pattern.test(value))
+  }
 
   // Password validation
   const handlePassword = (value) => {
@@ -586,13 +598,13 @@ const Login = () => {
     })
   }
 
-  // Login / Signup submit
+  // Submit handler (Login + Signup)
   const onSubmitHandler = async (e) => {
     e.preventDefault()
 
     try {
       if (state === 'Sign Up') {
-        // Validate password before signup
+        if (!emailValid) return toast.error("Please enter a valid email.")
         if (!(rules.length && rules.number && rules.upper && rules.lower && rules.special)) {
           return toast.error("Please meet all password requirements.")
         }
@@ -627,7 +639,6 @@ const Login = () => {
         }
       }
 
-      // Reload after token sets in context
       setTimeout(() => {
         navigate("/")
         window.location.reload()
@@ -638,7 +649,7 @@ const Login = () => {
     }
   }
 
-  // Redirect if already logged in
+  // If logged in → redirect
   useEffect(() => {
     if (uToken) navigate("/")
   }, [uToken])
@@ -646,11 +657,11 @@ const Login = () => {
   return (
     <form onSubmit={onSubmitHandler} className="min-h-[80vh] flex items-center">
       <div className="flex flex-col gap-3 m-auto items-start p-8 min-w-[340px] sm:min-w-96 border rounded-xl text-[#5E5E5E] text-sm shadow-lg">
-        
+
         <p className="text-2xl font-semibold">
           {state === "Sign Up" ? "Create Account" : "Login"}
         </p>
-        <p>Please {state === "Sign Up" ? "sign up" : "log in"} to book appointment</p>
+        <p>Please {state === "Sign Up" ? "sign up" : "log in"} to continue</p>
 
         {state === "Sign Up" && (
           <div className="w-full">
@@ -665,11 +676,11 @@ const Login = () => {
           </div>
         )}
 
-        {/* Email */}
+        {/* Email Input */}
         <div className="w-full">
           <p>Email</p>
           <input
-            onChange={(e) => setEmail(e.target.value)}
+            onChange={(e) => handleEmail(e.target.value)}
             value={email}
             className="border border-[#DADADA] rounded w-full p-2 mt-1"
             type="email"
@@ -677,7 +688,14 @@ const Login = () => {
           />
         </div>
 
-        {/* Password */}
+        {/* Email validation message – only in Sign Up */}
+        {state === "Sign Up" && (
+          <p className={`text-xs ${emailValid ? "text-green-600" : "text-red-500"}`}>
+            {emailValid ? "✓ Valid email" : "✗ Enter a valid email format"}
+          </p>
+        )}
+
+        {/* Password Input */}
         <div className="w-full">
           <p>Password</p>
           <input
@@ -689,7 +707,7 @@ const Login = () => {
           />
         </div>
 
-        {/* Password Criteria */}
+        {/* Password Rules */}
         {state === "Sign Up" && (
           <div className="text-xs w-full mt-1">
             <p className={rules.length ? "text-green-600" : "text-red-500"}>✓ At least 8 characters</p>
@@ -708,7 +726,7 @@ const Login = () => {
           {state === "Sign Up" ? "Create account" : "Login"}
         </button>
 
-        {/* Switch */}
+        {/* Switch Login <-> Signup */}
         {state === "Sign Up" ? (
           <p>
             Already have an account?{" "}
