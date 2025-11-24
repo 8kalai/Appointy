@@ -122,9 +122,10 @@ import 'react-toastify/dist/ReactToastify.css';
 
 // --- Doctor Pages (NEW Imports - Placeholder, adjust path if needed) ---
 // You will need to create these files in your project structure
-import DoctorLogin from './pages/DoctorLogin.jsx';
-import DoctorDashboard from './pages/Doctor/DoctorDashboard.jsx';
-import DoctorAppointments from './pages/Doctor/DoctorAppointments.jsx';
+import DoctorLogin from "./pages/DoctorLogin.jsx";
+import DoctorDashboard from "./pages/Doctor/DoctorDashboard.jsx";
+import DoctorAppointments from "./pages/Doctor/DoctorAppointments.jsx";
+
 
 
 // =======================================================
