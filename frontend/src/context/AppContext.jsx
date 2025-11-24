@@ -77,102 +77,68 @@ const AppContextProvider = (props) => {
 export default AppContextProvider*/
 
 import { createContext, useEffect, useState } from "react";
+import axios from "axios";
 import { toast } from "react-toastify";
-import axios from 'axios';
 
 export const AppContext = createContext();
 
 const AppContextProvider = (props) => {
-
-    const currencySymbol = '₹';
-
     const backendUrl = "https://appointy-zxmd.onrender.com";
+    const currencySymbol = "₹";
 
     const [doctors, setDoctors] = useState([]);
-
-    // ✔ Correct token key (matches Login.jsx)
-    const [token, setToken] = useState(localStorage.getItem("token") || "");
-
-    const [userData, setUserData] = useState(false);
+    const [uToken, setUToken] = useState(localStorage.getItem("uToken") || "");
+    const [userData, setUserData] = useState(null);
 
     const api = axios.create({
         baseURL: backendUrl
     });
 
-    // =============================
-    //   GET ALL DOCTORS
-    // =============================
     const getDoctorsData = async () => {
         try {
             const { data } = await api.get("/api/doctor/list");
-
-            if (data.success) {
-                setDoctors(data.doctors);
-            } else {
-                toast.error(data.message);
-            }
-        } catch (error) {
-            console.error("Error fetching doctors:", error);
-            toast.error("Failed to load doctors.");
+            if (data.success) setDoctors(data.doctors);
+        } catch {
+            toast.error("Failed to load doctors");
         }
     };
 
-    // =============================
-    //   LOAD USER PROFILE
-    // =============================
     const loadUserProfileData = async () => {
+        if (!uToken) return;
         try {
             const { data } = await api.get("/api/user/get-profile", {
-                headers: { token },
+                headers: { token: uToken }
             });
-
-            if (data.success) {
-                const safeUser = {
-                    ...data.userData,
-                    address: data.userData.address || { line1: "", line2: "" },
-                    gender: data.userData.gender || "",
-                    dob: data.userData.dob || "",
-                };
-
-                setUserData(safeUser);
-            } else {
-                toast.error(data.message);
-            }
-        } catch (error) {
-            console.error("Error loading user profile:", error);
-            toast.error("Could not load user profile.");
+            if (data.success) setUserData(data.userData);
+        } catch {
+            toast.error("Failed to load profile");
         }
     };
 
-    // LOAD DOCTORS ONCE
     useEffect(() => {
         getDoctorsData();
     }, []);
 
-    // LOAD USER PROFILE WHEN LOGGED IN
     useEffect(() => {
-        if (token) {
-            loadUserProfileData();
-        }
-    }, [token]);
-
-
-    const value = {
-        doctors,
-        getDoctorsData,
-        currencySymbol,
-        backendUrl,
-
-        // USER AUTH
-        token,
-        setToken,
-        userData,
-        setUserData,
-        loadUserProfileData,
-    };
+        if (uToken) loadUserProfileData();
+    }, [uToken]);
 
     return (
-        <AppContext.Provider value={value}>
+        <AppContext.Provider
+            value={{
+                backendUrl,
+                currencySymbol,
+                doctors,
+                getDoctorsData,
+
+                // LOGIN AUTH FIXED
+                uToken,
+                setUToken,
+
+                userData,
+                setUserData
+            }}
+        >
             {props.children}
         </AppContext.Provider>
     );

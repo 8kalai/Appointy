@@ -310,7 +310,7 @@ const Login = () => {
 
 export default Login;*/
 
-import React, { useContext, useEffect, useState } from 'react'
+/*import React, { useContext, useEffect, useState } from 'react'
 import { AppContext } from '../context/AppContext'
 import axios from 'axios'
 import { toast } from 'react-toastify'
@@ -444,7 +444,7 @@ const Login = () => {
           />
         </div>
 
-        {/* Password rules only in Sign Up */}
+        
         {state === 'Sign Up' && (
           <div className="text-xs w-full mt-1">
             <p className={rules.length ? "text-green-600" : "text-red-500"}>✓ At least 8 characters</p>
@@ -473,4 +473,73 @@ const Login = () => {
   )
 }
 
-export default Login
+export default <Login></Login>*/
+
+import React, { useContext, useState } from "react";
+import axios from "axios";
+import { AppContext } from "../context/AppContext";
+import { toast } from "react-toastify";
+import { useNavigate } from "react-router-dom";
+
+const Login = () => {
+    const navigate = useNavigate();
+    const { backendUrl, setUToken } = useContext(AppContext);
+
+    const [email, setEmail] = useState("");
+    const [password, setPassword] = useState("");
+
+    const handleLogin = async () => {
+        try {
+            const { data } = await axios.post(backendUrl + "/api/user/login", {
+                email,
+                password
+            });
+
+            if (data.success) {
+                // Save token
+                setUToken(data.token);
+                localStorage.setItem("uToken", data.token);
+
+                toast.success("Login successful!");
+
+                // 🔥 IMPORTANT FIX
+                // Reload the app so AppContext re-fetches user data
+                setTimeout(() => {
+                    navigate("/");
+                    window.location.reload();
+                }, 300);
+
+            } else {
+                toast.error(data.message);
+            }
+        } catch (err) {
+            toast.error("Login failed");
+        }
+    };
+
+    return (
+        <div>
+            <h2>Login</h2>
+
+            <input
+                type="email"
+                placeholder="Email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+            />
+
+            <input
+                type="password"
+                placeholder="Password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+            />
+
+            <button onClick={handleLogin}>Login</button>
+        </div>
+    );
+};
+
+export default Login;
+
+
