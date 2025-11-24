@@ -348,7 +348,7 @@ export default Login;*/
 
 // src/pages/Login/Login.jsx
 
-import axios from 'axios';
+/*import axios from 'axios';
 import React, { useContext, useState } from 'react';
 // 🟢 FIX: Corrected path from '../../context/' to '../context/'
 import { DoctorContext } from '../context/DoctorContext.jsx'; 
@@ -453,4 +453,89 @@ const Login = () => {
     );
 };
 
-export default Login;
+export default Login;*/
+
+
+import axios from 'axios';
+import React, { useState } from 'react';
+import { toast } from 'react-toastify';
+import { useNavigate } from 'react-router-dom';
+
+const DoctorLogin = () => {
+    console.log("DoctorLogin Component Loaded.");
+
+    const [email, setEmail] = useState('');
+    const [password, setPassword] = useState('');
+
+    // Your backend URL
+    const backendUrl = 'https://appointy-zxmd.onrender.com';
+
+    const navigate = useNavigate();
+
+    const onSubmitHandler = async (event) => {
+        event.preventDefault();
+        console.log("Doctor Login Submitted");
+
+        const fullUrl = `${backendUrl}/api/doctor/login`;
+        console.log("POST →", fullUrl);
+
+        try {
+            const { data } = await axios.post(fullUrl, {
+                email: email.trim().toLowerCase(),
+                password
+            });
+
+            if (data.success) {
+                localStorage.setItem('dToken', data.token);
+                toast.success("Login successful!");
+                navigate('/doctor-dashboard');
+            } else {
+                toast.error(data.message || "Invalid login.");
+            }
+
+        } catch (err) {
+            console.error("Login Error:", err);
+            toast.error(err.response?.data?.message || "Network error.");
+        }
+    };
+
+    return (
+        <form onSubmit={onSubmitHandler} className="min-h-[80vh] flex items-center">
+            <div className="flex flex-col gap-3 m-auto items-start p-8 min-w-[340px] sm:min-w-96 border rounded-xl shadow-lg">
+
+                <p className="text-2xl font-semibold m-auto">
+                    Doctor <span className="text-primary">Login</span>
+                </p>
+
+                <div className="w-full">
+                    <p>Email</p>
+                    <input
+                        type="email"
+                        required
+                        value={email}
+                        onChange={e => setEmail(e.target.value)}
+                        className="border rounded w-full p-2 mt-1"
+                    />
+                </div>
+
+                <div className="w-full">
+                    <p>Password</p>
+                    <input
+                        type="password"
+                        required
+                        value={password}
+                        onChange={e => setPassword(e.target.value)}
+                        className="border rounded w-full p-2 mt-1"
+                    />
+                </div>
+
+                <button type="submit" className="bg-primary text-white w-full py-2 rounded-md text-base">
+                    Login
+                </button>
+
+            </div>
+        </form>
+    );
+};
+
+export default DoctorLogin;

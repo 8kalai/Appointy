@@ -312,8 +312,6 @@ export default Login;*/
 
 import axios from 'axios';
 import React, { useState } from 'react';
-// 🛑 REMOVED: import { DoctorContext, AdminContext } 
-// We are removing these as they caused the component to crash on rendering.
 import { toast } from 'react-toastify';
 import { useNavigate } from 'react-router-dom';
 
