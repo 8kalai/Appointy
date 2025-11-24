@@ -475,7 +475,7 @@ const Login = () => {
 
 export default <Login></Login>*/
 
-import React, { useContext, useState } from "react";
+/*import React, { useContext, useState } from "react";
 import axios from "axios";
 import { AppContext } from "../context/AppContext";
 import { toast } from "react-toastify";
@@ -547,4 +547,194 @@ const Login = () => {
     );
 };
 
-export default Login;
+export default Login;*/
+
+import React, { useContext, useEffect, useState } from 'react'
+import { AppContext } from '../context/AppContext'
+import axios from 'axios'
+import { toast } from 'react-toastify'
+import { useNavigate } from 'react-router-dom'
+
+const Login = () => {
+  const { backendUrl, uToken, setUToken } = useContext(AppContext)
+  const [state, setState] = useState('Login')
+
+  const [name, setName] = useState('')
+  const [email, setEmail] = useState('')
+  const [password, setPassword] = useState('')
+
+  const [rules, setRules] = useState({
+    length: false,
+    number: false,
+    upper: false,
+    lower: false,
+    special: false
+  })
+
+  const navigate = useNavigate()
+
+  // Password validation
+  const handlePassword = (value) => {
+    setPassword(value)
+
+    setRules({
+      length: value.length >= 8,
+      number: /[0-9]/.test(value),
+      upper: /[A-Z]/.test(value),
+      lower: /[a-z]/.test(value),
+      special: /[@$!%*?&]/.test(value),
+    })
+  }
+
+  // Login / Signup submit
+  const onSubmitHandler = async (e) => {
+    e.preventDefault()
+
+    try {
+      if (state === 'Sign Up') {
+        // Validate password before signup
+        if (!(rules.length && rules.number && rules.upper && rules.lower && rules.special)) {
+          return toast.error("Please meet all password requirements.")
+        }
+
+        const { data } = await axios.post(backendUrl + "/api/user/register", {
+          name,
+          email,
+          password
+        })
+
+        if (data.success) {
+          localStorage.setItem("uToken", data.token)
+          setUToken(data.token)
+          toast.success("Account created!")
+        } else {
+          return toast.error(data.message)
+        }
+
+      } else {
+        // Login
+        const { data } = await axios.post(backendUrl + "/api/user/login", {
+          email,
+          password
+        })
+
+        if (data.success) {
+          localStorage.setItem("uToken", data.token)
+          setUToken(data.token)
+          toast.success("Login successful!")
+        } else {
+          return toast.error(data.message)
+        }
+      }
+
+      // Reload after token sets in context
+      setTimeout(() => {
+        navigate("/")
+        window.location.reload()
+      }, 300)
+
+    } catch (err) {
+      toast.error("Something went wrong.")
+    }
+  }
+
+  // Redirect if already logged in
+  useEffect(() => {
+    if (uToken) navigate("/")
+  }, [uToken])
+
+  return (
+    <form onSubmit={onSubmitHandler} className="min-h-[80vh] flex items-center">
+      <div className="flex flex-col gap-3 m-auto items-start p-8 min-w-[340px] sm:min-w-96 border rounded-xl text-[#5E5E5E] text-sm shadow-lg">
+        
+        <p className="text-2xl font-semibold">
+          {state === "Sign Up" ? "Create Account" : "Login"}
+        </p>
+        <p>Please {state === "Sign Up" ? "sign up" : "log in"} to book appointment</p>
+
+        {state === "Sign Up" && (
+          <div className="w-full">
+            <p>Full Name</p>
+            <input
+              onChange={(e) => setName(e.target.value)}
+              value={name}
+              className="border border-[#DADADA] rounded w-full p-2 mt-1"
+              type="text"
+              required
+            />
+          </div>
+        )}
+
+        {/* Email */}
+        <div className="w-full">
+          <p>Email</p>
+          <input
+            onChange={(e) => setEmail(e.target.value)}
+            value={email}
+            className="border border-[#DADADA] rounded w-full p-2 mt-1"
+            type="email"
+            required
+          />
+        </div>
+
+        {/* Password */}
+        <div className="w-full">
+          <p>Password</p>
+          <input
+            onChange={(e) => handlePassword(e.target.value)}
+            value={password}
+            className="border border-[#DADADA] rounded w-full p-2 mt-1"
+            type="password"
+            required
+          />
+        </div>
+
+        {/* Password Criteria */}
+        {state === "Sign Up" && (
+          <div className="text-xs w-full mt-1">
+            <p className={rules.length ? "text-green-600" : "text-red-500"}>✓ At least 8 characters</p>
+            <p className={rules.number ? "text-green-600" : "text-red-500"}>✓ Must contain a number</p>
+            <p className={rules.upper ? "text-green-600" : "text-red-500"}>✓ Must contain uppercase letter</p>
+            <p className={rules.lower ? "text-green-600" : "text-red-500"}>✓ Must contain lowercase letter</p>
+            <p className={rules.special ? "text-green-600" : "text-red-500"}>✓ Must include a special character (@$!%*?&)</p>
+          </div>
+        )}
+
+        {/* Button */}
+        <button
+          type="submit"
+          className="bg-primary text-white w-full py-2 my-2 rounded-md text-base"
+        >
+          {state === "Sign Up" ? "Create account" : "Login"}
+        </button>
+
+        {/* Switch */}
+        {state === "Sign Up" ? (
+          <p>
+            Already have an account?{" "}
+            <span
+              onClick={() => setState("Login")}
+              className="text-primary underline cursor-pointer"
+            >
+              Login here
+            </span>
+          </p>
+        ) : (
+          <p>
+            Create a new account?{" "}
+            <span
+              onClick={() => setState("Sign Up")}
+              className="text-primary underline cursor-pointer"
+            >
+              Click here
+            </span>
+          </p>
+        )}
+
+      </div>
+    </form>
+  )
+}
+
+export default Login
+
