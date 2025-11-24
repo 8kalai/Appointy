@@ -433,37 +433,51 @@ const Appointment = () => {
 
   
   const bookAppointment = async () => {
-    if (!uToken) {
-      toast.warning('Login to book appointment')
-      return navigate('/login')
-    }
-
-    const date = docSlots[slotIndex][0].datetime
-
-    let day = date.getDate()
-    let month = date.getMonth() + 1
-    let year = date.getFullYear()
-
-    const slotDate = `${day}_${month}_${year}`
-
-    try {
-      const { data } = await axios.post(
-        backendUrl + '/api/user/book-appointment',
-        { docId, slotDate, slotTime },
-        { headers: { token: uToken } }
-      )
-
-      if (data.success) {
-        toast.success(data.message)
-        getDoctorsData()
-        navigate('/my-appointments')
-      } else {
-        toast.error(data.message)
-      }
-    } catch (error) {
-      toast.error(error.message)
-    }
+  if (!uToken) {
+    toast.warning('Login to book appointment')
+    return navigate('/login')
   }
+
+  if (!slotTime) {
+    toast.error("Please select a time slot")
+    return
+  }
+
+  // GET THE CORRECT DATE OF THE SELECTED TIME
+  const selectedSlot = docSlots[slotIndex].find(s => s.time === slotTime)
+
+  if (!selectedSlot) {
+    toast.error("Invalid time slot selected")
+    return
+  }
+
+  const date = selectedSlot.datetime
+
+  let day = date.getDate()
+  let month = date.getMonth() + 1
+  let year = date.getFullYear()
+
+  const slotDate = `${day}_${month}_${year}`
+
+  try {
+    const { data } = await axios.post(
+      backendUrl + '/api/user/book-appointment',
+      { docId, slotDate, slotTime },
+      { headers: { token: uToken } }
+    )
+
+    if (data.success) {
+      toast.success("Appointment booked successfully")
+      getDoctorsData()
+      navigate('/my-appointments')
+    } else {
+      toast.error(data.message)
+    }
+  } catch (error) {
+    toast.error(error.message)
+  }
+}
+
 
   
   useEffect(() => {
