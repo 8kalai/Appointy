@@ -359,7 +359,7 @@ const Appointment = () => {
   const { docId } = useParams()
   const navigate = useNavigate()
 
-  // FIXED: Now the correct token is used
+  
   const { doctors, currencySymbol, backendUrl, uToken, getDoctorsData } =
     useContext(AppContext)
 
@@ -370,9 +370,7 @@ const Appointment = () => {
   const [slotIndex, setSlotIndex] = useState(0)
   const [slotTime, setSlotTime] = useState('')
 
-  // ======================================================
-  // FETCH DOCTOR INFO
-  // ======================================================
+  
   const fetchDocInfo = async () => {
     const doc = doctors.find((doc) => doc._id === docId)
     if (doc) {
@@ -380,9 +378,7 @@ const Appointment = () => {
     }
   }
 
-  // ======================================================
-  // GENERATE SLOTS
-  // ======================================================
+  
   const getAvailableSlots = () => {
     if (!docInfo) return
     setDocSlots([])
@@ -435,9 +431,7 @@ const Appointment = () => {
     }
   }
 
-  // ======================================================
-  // BOOK APPOINTMENT
-  // ======================================================
+  
   const bookAppointment = async () => {
     if (!uToken) {
       toast.warning('Login to book appointment')
@@ -471,9 +465,7 @@ const Appointment = () => {
     }
   }
 
-  // ======================================================
-  // LOADERS
-  // ======================================================
+  
   useEffect(() => {
     if (doctors.length > 0) fetchDocInfo()
   }, [doctors, docId])
@@ -482,9 +474,7 @@ const Appointment = () => {
     if (docInfo) getAvailableSlots()
   }, [docInfo])
 
-  // ======================================================
-  // UI
-  // ======================================================
+  //UI
   return (
     docInfo && (
       <div>

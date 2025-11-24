@@ -20,7 +20,7 @@ const doctorModel = mongoose.models.doctor || mongoose.model("doctor", doctorSch
 export default doctorModel;*/
 
 import mongoose from "mongoose";
-import bcrypt from "bcrypt"; // Import bcrypt for password hashing
+import bcrypt from "bcrypt"; 
 
 const doctorSchema = new mongoose.Schema({
     name: { type: String, required: true },
@@ -35,12 +35,12 @@ const doctorSchema = new mongoose.Schema({
     fees: { type: Number, required: true },
     slots_booked: { type: Object, default: {} },
     address: { type: Object, required: true },
-    date: { type: Number, required: true }, // Expecting a timestamp number
-}, { minimize: false, timestamps: true }); // Added timestamps option for better tracking
+    date: { type: Number, required: true }, 
+}, { minimize: false, timestamps: true }); 
 
-// Pre-save hook to hash the password before saving
+
 doctorSchema.pre('save', async function(next) {
-    // Only hash if the password field is new or has been modified
+    
     if (!this.isModified('password')) {
         return next();
     }

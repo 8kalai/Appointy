@@ -15,7 +15,7 @@ const authDoctor = async (req, res, next) => {
             ? authHeader.split(' ')[1]
             : authHeader;
 
-        // Verify token and attach user info to req
+        
         const decoded = jwt.verify(token, process.env.JWT_SECRET);
         req.user = { id: decoded.id };
         next();

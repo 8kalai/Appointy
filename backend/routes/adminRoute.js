@@ -28,8 +28,7 @@ import { changeAvailability } from '../controllers/doctorController.js';
 
 const adminRouter = express.Router();
 
-// NOTE: Authentication (authAdmin) has been removed from all routes below
-// to allow operations without a valid JWT token.
+
 
 adminRouter.post("/create-initial-admin", createInitialAdmin);
 adminRouter.post("/login", loginAdmin)

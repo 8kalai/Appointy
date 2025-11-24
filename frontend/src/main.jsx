@@ -25,11 +25,11 @@ import AppContextProvider from './context/AppContext.jsx'
 import DoctorContextProvider from './context/doctorContext.jsx'
 
 createRoot(document.getElementById('root')).render(
-  <BrowserRouter>
-    <AppContextProvider>
+ <BrowserRouter>
+   <AppContextProvider>
             <DoctorContextProvider>
-                <App />
+             <App />
             </DoctorContextProvider>
-    </AppContextProvider>
-  </BrowserRouter>,
+   </AppContextProvider>
+ </BrowserRouter>,
 )

@@ -31,14 +31,12 @@ import {
 
 const router = express.Router();
 
-// Public routes
 router.get('/list', doctorList);
 router.post('/login', loginDoctor);
 
-// Admin adds doctors
 router.post('/add-doctor', addDoctor);
 
-// Doctor routes (NO AUTH — doctorId is sent from frontend)
+
 router.post('/profile', doctorProfile);            // expects { doctorId }
 router.post('/update-profile', updateDoctorProfile); // expects { doctorId, ... }
 router.post('/dashboard', doctorDashboard);        // expects { doctorId }

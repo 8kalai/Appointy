@@ -122,9 +122,7 @@ import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
 
-// =============================================
-// 🔐 USER PROTECTED ROUTE (React Router v6)
-// =============================================
+
 const ProtectedRoute = ({ children }) => {
   const { uToken } = useContext(AppContext);
   const isAuthenticated = uToken || localStorage.getItem("uToken");
@@ -133,9 +131,6 @@ const ProtectedRoute = ({ children }) => {
 };
 
 
-// =============================================
-// ✨ MAIN APP
-// =============================================
 const App = () => {
   return (
     <div className="mx-4 sm:mx-[10%]">

@@ -9,7 +9,7 @@ const MyProfile = () => {
     const [isEdit, setIsEdit] = useState(false)
     const [image, setImage] = useState(false)
 
-    // ✔ FIX: use uToken instead of token
+    
     const { uToken, backendUrl, userData, setUserData, loadUserProfileData } = useContext(AppContext)
 
     const updateUserProfileData = async () => {
@@ -22,7 +22,7 @@ const MyProfile = () => {
             formData.append('dob', userData.dob)
             if (image) formData.append('image', image)
 
-            // ✔ FIX: send correct header
+            
             const { data } = await axios.post(
                 backendUrl + '/api/user/update-profile',
                 formData,

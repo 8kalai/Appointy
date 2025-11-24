@@ -149,15 +149,10 @@ import userRouter from './routes/userRoute.js';
 import path from 'path'; 
 import { fileURLToPath } from 'url';
 import fs from 'fs';
-// ------------------------------------
 
-// ❌ REMOVED: import bcrypt (no longer needed in server file)
-// ❌ REMOVED: import adminModel (no longer needed in server file)
-
-// ** Define __dirname for ES Modules **
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
-// ----------------------------------------
+
 
 
 // app config
@@ -174,36 +169,30 @@ app.use(express.json());
 // Get the live frontend URL from the environment 
 const FRONTEND_URL = process.env.FRONTEND_URL; 
 const ADMIN_FRONTEND_URL = process.env.ADMIN_FRONTEND_URL;
-console.log(`FRONTEND_URL detected for CORS: ${FRONTEND_URL}`);
-console.log(`ADMIN_FRONTEND_URL detected for CORS: ${ADMIN_FRONTEND_URL}`);
+//console.log(`FRONTEND_URL detected for CORS: ${FRONTEND_URL}`);
+//console.log(`ADMIN_FRONTEND_URL detected for CORS: ${ADMIN_FRONTEND_URL}`);
 
 // Define the allowed origins as an array
 const allowedOrigins = [
-    "http://localhost:5173",
-    "http://127.0.0.0:1", 
-    FRONTEND_URL,
-    ADMIN_FRONTEND_URL
+  "http://localhost:5173",
+  "http://127.0.0.1:5173", 
+  FRONTEND_URL,
+  ADMIN_FRONTEND_URL
 ];
 
-// -------------------------------------------------------------
-// 🟢 CORS middleware 
-// -------------------------------------------------------------
+
 app.use(cors({
-    origin: (origin, callback) => {
-        if (!origin || allowedOrigins.includes(origin)) {
-            callback(null, true);
-        } else {
-            callback(new Error('Not allowed by CORS'));
-        }
-    },
-    credentials: true 
+  origin: (origin, callback) => {
+    if (!origin || allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
+  credentials: true 
 }));
-// -------------------------------------------------------------
 
-
-// ** Setup static folder to serve doctor images **
-app.use('/images', express.static(path.join(__dirname, 'admin', 'assets'))); 
-// ----------------------------------------------
+app.use('/images', express.static(path.join(__dirname, 'admin', 'assets')));
 
 
 // api endpoints
@@ -212,32 +201,25 @@ app.use('/api/doctor', doctorRouter);
 app.use("/api/user", userRouter);
 
 app.get("/", (req, res) => {
-  res.send("API Working");
+ res.send("API Working");
 });
 
 app.get('/test-db', (req, res) => {
-  const state = mongoose.connection.readyState;
-  if (state === 1) {
-    res.send('Database is connected');
-  } else {
-    res.status(500).send('Database is NOT connected');
-  }
+ const state = mongoose.connection.readyState;
+ if (state === 1) {
+  res.send('Database is connected');
+ } else {
+  res.status(500).send('Database is NOT connected');
+ }
 });
 
 
-// ❌ REMOVED: The call to createDefaultAdmin is gone!
-// mongoose.connection.once("open", () => {
-//   createDefaultAdmin();
-// });
-
-
-// ** Ensure uploads directory exists on server start **
+//Ensure uploads directory exists on server start **
 const uploadDir = path.join(__dirname, 'admin', 'assets');
 if (!fs.existsSync(uploadDir)) {
-    fs.mkdirSync(uploadDir, { recursive: true });
-    console.log(`Created uploads directory: ${uploadDir}`);
+  fs.mkdirSync(uploadDir, { recursive: true });
+  console.log(`Created uploads directory: ${uploadDir}`);
 }
-// ---------------------------------------
 
 // start server
 app.listen(port, () => console.log(`Server started on PORT:${port}`));
