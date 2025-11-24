@@ -86,18 +86,15 @@ const AppContextProvider = (props) => {
 
     const currencySymbol = '₹';
 
-    // Backend URL
     const backendUrl = "https://appointy-zxmd.onrender.com";
 
     const [doctors, setDoctors] = useState([]);
 
-    // ✔ FIXED: Use ONLY 'uToken'
-    const [uToken, setUToken] = useState(localStorage.getItem("uToken") || "");
+    // ✔ Correct token key (matches Login.jsx)
+    const [token, setToken] = useState(localStorage.getItem("token") || "");
 
-    // Logged-in user data
     const [userData, setUserData] = useState(false);
 
-    // Axios instance
     const api = axios.create({
         baseURL: backendUrl
     });
@@ -126,7 +123,7 @@ const AppContextProvider = (props) => {
     const loadUserProfileData = async () => {
         try {
             const { data } = await api.get("/api/user/get-profile", {
-                headers: { token: uToken },
+                headers: { token },
             });
 
             if (data.success) {
@@ -154,15 +151,12 @@ const AppContextProvider = (props) => {
 
     // LOAD USER PROFILE WHEN LOGGED IN
     useEffect(() => {
-        if (uToken) {
+        if (token) {
             loadUserProfileData();
         }
-    }, [uToken]);
+    }, [token]);
 
 
-    // =============================
-    //   CONTEXT VALUE
-    // =============================
     const value = {
         doctors,
         getDoctorsData,
@@ -170,8 +164,8 @@ const AppContextProvider = (props) => {
         backendUrl,
 
         // USER AUTH
-        uToken,
-        setUToken,
+        token,
+        setToken,
         userData,
         setUserData,
         loadUserProfileData,

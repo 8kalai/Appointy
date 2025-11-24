@@ -9,7 +9,10 @@ import { toast } from 'react-toastify'
 const Appointment = () => {
   const { docId } = useParams()
   const navigate = useNavigate()
-  const { doctors, currencySymbol, backendUrl, token, getDoctorsData } = useContext(AppContext)
+
+  // ✅ USE uToken (your real token)
+  const { doctors, currencySymbol, backendUrl, uToken, getDoctorsData } = useContext(AppContext)
+
   const daysOfWeek = ['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT']
 
   const [docInfo, setDocInfo] = useState(null)
@@ -20,7 +23,6 @@ const Appointment = () => {
   const fetchDocInfo = async () => {
     const doc = doctors.find((doc) => doc._id === docId)
     if (doc) {
-      // Ensure slots_booked is always at least an empty object
       setDocInfo({ ...doc, slots_booked: doc.slots_booked || {} })
     }
   }
@@ -58,11 +60,10 @@ const Appointment = () => {
         const month = currentDate.getMonth() + 1
         const year = currentDate.getFullYear()
         const slotDate = `${day}_${month}_${year}`
-        const slotTime = formattedTime
 
         const isSlotAvailable =
           !docInfo?.slots_booked?.[slotDate] ||
-          !docInfo.slots_booked[slotDate].includes(slotTime)
+          !docInfo.slots_booked[slotDate].includes(formattedTime)
 
         if (isSlotAvailable) {
           timeSlots.push({
@@ -79,23 +80,25 @@ const Appointment = () => {
   }
 
   const bookAppointment = async () => {
-
-    if (!token) {
+    // 🔥 FIXED: Correct token variable
+    if (!uToken) {
       toast.warning('Login to book appointment')
       return navigate('/login')
     }
 
     const date = docSlots[slotIndex][0].datetime
-  
     let day = date.getDate()
     let month = date.getMonth() + 1
     let year = date.getFullYear()
-
     const slotDate = day + "_" + month + "_" + year
 
     try {
+      const { data } = await axios.post(
+        backendUrl + '/api/user/book-appointment',
+        { docId, slotDate, slotTime },
+        { headers: { token: uToken } }  // 🔥 FIXED
+      )
 
-      const { data } = await axios.post(backendUrl + '/api/user/book-appointment', { docId, slotDate, slotTime }, { headers: { token } })
       if (data.success) {
         toast.success(data.message)
         getDoctorsData()
@@ -108,7 +111,6 @@ const Appointment = () => {
       console.log(error)
       toast.error(error.message)
     }
-
   }
 
   useEffect(() => {
@@ -131,6 +133,7 @@ const Appointment = () => {
           <div>
             <img className='bg-primary w-full sm:max-w-72 rounded-lg' src={docInfo.image} alt="" />
           </div>
+
           <div className='flex-1 border border-[#ADADAD] rounded-lg p-8 py-7 bg-white mx-2 sm:mx-0 mt-[-80px] sm:mt-0'>
             <p className='flex items-center gap-2 text-3xl font-medium text-gray-700'>
               {docInfo.name} <img src={assets.verified_icon} alt="" />
@@ -139,12 +142,7 @@ const Appointment = () => {
               <p>{docInfo.degree} - {docInfo.speciality}</p>
               <button className='py-0.5 px-2 border text-xs rounded-full'>{docInfo.experience}</button>
             </div>
-            <div>
-              <p className='flex items-center gap-1 text-sm font-medium text-[#262626] mt-3'>
-                About <img src={assets.info_icon} alt="" />
-              </p>
-              <p className='text-sm text-gray-600 max-w-[700px] mt-1'>{docInfo.about}</p>
-            </div>
+
             <p className='text-gray-600 font-medium mt-4'>
               Appointment fee: <span className='text-gray-800'>{currencySymbol} {docInfo.fees}</span>
             </p>
@@ -155,41 +153,37 @@ const Appointment = () => {
         <div className='sm:ml-72 sm:pl-4 mt-8 font-medium text-[#565656]'>
           <p>Booking slots</p>
 
-          {/* Days Scroll */}
           <div className='flex gap-3 items-center w-full overflow-x-scroll mt-4'>
-            {docSlots.length > 0 &&
-              docSlots.map((item, index) => (
-                <div
-                  onClick={() => setSlotIndex(index)}
-                  key={index}
-                  className={`text-center py-6 min-w-16 rounded-full cursor-pointer ${slotIndex === index ? 'bg-primary text-white' : 'border border-[#DDDDDD]'
-                    }`}
-                >
-                  <p>{item[0] && daysOfWeek[item[0].datetime.getDay()]}</p>
-                  <p>{item[0] && item[0].datetime.getDate()}</p>
-                </div>
-              ))}
+            {docSlots.map((item, index) => (
+              <div
+                onClick={() => setSlotIndex(index)}
+                key={index}
+                className={`text-center py-6 min-w-16 rounded-full cursor-pointer ${
+                  slotIndex === index ? 'bg-primary text-white' : 'border border-[#DDDDDD]'
+                }`}
+              >
+                <p>{item[0] && ['SUN','MON','TUE','WED','THU','FRI','SAT'][item[0].datetime.getDay()]}</p>
+                <p>{item[0] && item[0].datetime.getDate()}</p>
+              </div>
+            ))}
           </div>
 
-          {/* Time Slots Scroll */}
           <div className='flex items-center gap-3 w-full overflow-x-scroll mt-4'>
-            {docSlots.length > 0 &&
-              docSlots[slotIndex] &&
-              docSlots[slotIndex].map((item, index) => (
-                <p
-                  onClick={() => setSlotTime(item.time)}
-                  key={index}
-                  className={`text-sm font-light flex-shrink-0 px-5 py-2 rounded-full cursor-pointer ${item.time === slotTime
-                      ? 'bg-primary text-white'
-                      : 'text-[#949494] border border-[#B4B4B4]'
-                    }`}
-                >
-                  {item.time.toLowerCase()}
-                </p>
-              ))}
+            {docSlots[slotIndex]?.map((item, index) => (
+              <p
+                onClick={() => setSlotTime(item.time)}
+                key={index}
+                className={`text-sm font-light flex-shrink-0 px-5 py-2 rounded-full cursor-pointer ${
+                  item.time === slotTime
+                    ? 'bg-primary text-white'
+                    : 'text-[#949494] border border-[#B4B4B4]'
+                }`}
+              >
+                {item.time.toLowerCase()}
+              </p>
+            ))}
           </div>
 
-          {/* Book Button */}
           <button
             onClick={bookAppointment}
             className='bg-primary text-white text-sm font-light px-20 py-3 rounded-full my-6'
@@ -198,7 +192,6 @@ const Appointment = () => {
           </button>
         </div>
 
-        {/* Related Doctors */}
         <RelatedDoctors speciality={docInfo.speciality} docId={docId} />
       </div>
     )
