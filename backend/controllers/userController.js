@@ -472,7 +472,7 @@ const cancelAppointment = async (req, res) => {
 
 export { registerUser, loginUser, getProfile, updateProfile, bookAppointment, listAppointment, cancelAppointment }*/
 
-import validator from 'validator'
+/*import validator from 'validator'
 import bcrypt from 'bcrypt'
 import jwt from 'jsonwebtoken'
 import { v2 as cloudinary } from 'cloudinary'
@@ -637,4 +637,139 @@ const cancelAppointment = async (req, res) => {
 export {
   registerUser, loginUser, getProfile, updateProfile,
   bookAppointment, listAppointment, cancelAppointment
-}
+}*/
+
+import userModel from '../models/userModel.js';
+import appointmentModel from '../models/appointmentModel.js';
+import doctorModel from '../models/doctorModel.js';
+import bcrypt from 'bcrypt';
+import jwt from 'jsonwebtoken';
+import validator from 'validator';
+import { v2 as cloudinary } from 'cloudinary';
+
+// Register User
+export const registerUser = async (req, res) => {
+  try {
+    const { name, email, password } = req.body;
+    if (!name || !email || !password)
+      return res.json({ success: false, message: 'Missing Details' });
+
+    if (!validator.isEmail(email))
+      return res.json({ success: false, message: 'Invalid email' });
+
+    if (password.length < 8)
+      return res.json({ success: false, message: 'Password too short' });
+
+    const hashedPassword = await bcrypt.hash(password, 10);
+    const user = await new userModel({ name, email, password: hashedPassword }).save();
+
+    const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET);
+    res.json({ success: true, token });
+  } catch (error) {
+    console.log(error);
+    res.json({ success: false, message: error.message });
+  }
+};
+
+// Login User
+export const loginUser = async (req, res) => {
+  try {
+    const { email, password } = req.body;
+    const user = await userModel.findOne({ email });
+    if (!user) return res.json({ success: false, message: 'User not found' });
+
+    const isMatch = await bcrypt.compare(password, user.password);
+    if (!isMatch) return res.json({ success: false, message: 'Invalid Credentials' });
+
+    const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET);
+    res.json({ success: true, token });
+  } catch (error) {
+    console.log(error);
+    res.json({ success: false, message: error.message });
+  }
+};
+
+// Get User Profile
+export const getProfile = async (req, res) => {
+  try {
+    const user = await userModel.findById(req.userId).select('-password');
+    res.json({ success: true, userData: user });
+  } catch (error) {
+    console.log(error);
+    res.json({ success: false, message: error.message });
+  }
+};
+
+// List User Appointments
+export const listAppointment = async (req, res) => {
+  try {
+    const appointments = await appointmentModel.find({ userId: req.userId }).sort({ date: -1 });
+    res.json({ success: true, appointments });
+  } catch (error) {
+    console.log(error);
+    res.json({ success: false, message: error.message });
+  }
+};
+
+// Book Appointment
+export const bookAppointment = async (req, res) => {
+  try {
+    const { docId, slotDate, slotTime } = req.body;
+
+    const doctor = await doctorModel.findById(docId);
+    if (!doctor.available) return res.json({ success: false, message: 'Doctor not available' });
+
+    // initialize slots_booked if undefined
+    doctor.slots_booked = doctor.slots_booked || {};
+    doctor.slots_booked[slotDate] = doctor.slots_booked[slotDate] || [];
+
+    if (doctor.slots_booked[slotDate].includes(slotTime))
+      return res.json({ success: false, message: 'Slot not available' });
+
+    doctor.slots_booked[slotDate].push(slotTime);
+    await doctor.save();
+
+    const user = await userModel.findById(req.userId).select('-password');
+    const appointment = await new appointmentModel({
+      userId: req.userId,
+      docId,
+      userData: user,
+      docData: doctor,
+      amount: doctor.fees,
+      slotDate,
+      slotTime,
+      date: Date.now(),
+    }).save();
+
+    res.json({ success: true, message: 'Appointment booked', appointment });
+  } catch (error) {
+    console.log(error);
+    res.json({ success: false, message: error.message });
+  }
+};
+
+// Cancel Appointment
+export const cancelAppointment = async (req, res) => {
+  try {
+    const { appointmentId } = req.body;
+    const appointment = await appointmentModel.findById(appointmentId);
+    if (!appointment || appointment.userId.toString() !== req.userId)
+      return res.json({ success: false, message: 'Unauthorized action' });
+
+    appointment.cancelled = true;
+    await appointment.save();
+
+    // remove slot from doctor
+    const doctor = await doctorModel.findById(appointment.docId);
+    doctor.slots_booked[appointment.slotDate] = doctor.slots_booked[appointment.slotDate].filter(
+      t => t !== appointment.slotTime
+    );
+    await doctor.save();
+
+    res.json({ success: true, message: 'Appointment cancelled' });
+  } catch (error) {
+    console.log(error);
+    res.json({ success: false, message: error.message });
+  }
+};
+

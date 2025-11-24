@@ -76,7 +76,7 @@ const AppContextProvider = (props) => {
 
 export default AppContextProvider*/
 
-import { createContext, useEffect, useState } from "react";
+/*import { createContext, useEffect, useState } from "react";
 import axios from "axios";
 import { toast } from "react-toastify";
 
@@ -145,4 +145,57 @@ const AppContextProvider = (props) => {
     );
 };
 
+export default AppContextProvider;*/
+
+
+import { createContext, useEffect, useState } from "react";
+import axios from "axios";
+import { toast } from "react-toastify";
+
+export const AppContext = createContext();
+
+const AppContextProvider = ({ children }) => {
+  const backendUrl = "https://appointy-zxmd.onrender.com";
+  const currencySymbol = "₹";
+
+  const [doctors, setDoctors] = useState([]);
+  const [uToken, setUToken] = useState(localStorage.getItem("uToken") || "");
+  const [userData, setUserData] = useState(null);
+
+  const api = axios.create({ baseURL: backendUrl });
+
+  const getDoctorsData = async () => {
+    try {
+      const { data } = await api.get("/api/doctor/list");
+      if (data.success) setDoctors(data.doctors);
+    } catch {
+      toast.error("Failed to load doctors");
+    }
+  };
+
+  const loadUserProfileData = async () => {
+    if (!uToken) return;
+    try {
+      const { data } = await api.get("/api/user/get-profile", {
+        headers: { token: uToken },
+      });
+      if (data.success) setUserData(data.userData);
+    } catch {
+      toast.error("Failed to load profile");
+    }
+  };
+
+  useEffect(() => getDoctorsData(), []);
+  useEffect(() => loadUserProfileData(), [uToken]);
+
+  return (
+    <AppContext.Provider
+      value={{ backendUrl, currencySymbol, doctors, getDoctorsData, uToken, setUToken, userData, setUserData }}
+    >
+      {children}
+    </AppContext.Provider>
+  );
+};
+
 export default AppContextProvider;
+
